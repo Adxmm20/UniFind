@@ -3,12 +3,13 @@
 import { Box } from "@mui/material";
 
 // Monochrome brand marks, inlined as SVG paths so the app keeps its
-// zero-dependency posture (@mui/icons-material is not installed).
+// zero-dependency posture (@mui/icons-material is not installed). They paint in
+// `currentColor`, so the row follows the theme with the dialog around it.
 //
 // Social sign-in is not wired up, so these are decoration: the row is hidden
 // from assistive technology and none of the marks are focusable. That is
 // deliberate — rendering them as disabled buttons would grey them out, which
-// fights the "four black icons" look.
+// fights the marks' solid look.
 const ICONS = [
   {
     name: "Apple",
@@ -32,7 +33,12 @@ export default function SocialIcons() {
   return (
     <Box
       aria-hidden="true"
-      sx={{ display: "flex", alignItems: "center", gap: 1.75 }}
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 1.75,
+        color: "var(--ink)",
+      }}
     >
       {ICONS.map((icon) => (
         <svg
@@ -40,7 +46,7 @@ export default function SocialIcons() {
           viewBox="0 0 24 24"
           width={20}
           height={20}
-          fill="#111111"
+          fill="currentColor"
         >
           <path d={icon.path} />
         </svg>

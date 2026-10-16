@@ -1,6 +1,7 @@
 import { Box, Button, Typography } from "@mui/material";
 import { getSessionUser } from "@/lib/auth";
 import Header from "./components/Header";
+import AppIcon from "./components/icons/AppIcon";
 
 export default async function NotFound() {
   const user = await getSessionUser();
@@ -10,6 +11,8 @@ export default async function NotFound() {
       <Header user={user} />
       <Box
         component="main"
+        id="content"
+        tabIndex={-1}
         sx={{
           maxWidth: 640,
           mx: "auto",
@@ -18,6 +21,9 @@ export default async function NotFound() {
           textAlign: "center",
         }}
       >
+        <Box sx={{ color: "var(--on-bg-muted)", mb: 2 }}>
+          <AppIcon name="search" size={56} />
+        </Box>
         <Typography variant="h3" sx={{ fontWeight: 700, color: "var(--on-bg)", mb: 1 }}>
           404
         </Typography>
@@ -32,9 +38,10 @@ export default async function NotFound() {
           href="/"
           variant="contained"
           sx={{
-            backgroundColor: "#081C15",
+            backgroundColor: "var(--btn-bg)",
+            color: "var(--btn-ink)",
             textTransform: "none",
-            "&:hover": { backgroundColor: "#1B4332" },
+            "&:hover": { backgroundColor: "var(--btn-bg-hover)" },
           }}
         >
           Back to home

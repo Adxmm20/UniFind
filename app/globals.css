@@ -1,25 +1,335 @@
+/* ---------------------------------------------------------------------------
+   Theme tokens
+
+   Everything the two themes differ on is a token here, so a component names the
+   surface or ink it wants rather than a colour. Both values travel in one
+   `light-dark()` pair and `color-scheme` is what picks between them, which makes
+   the theme switch a single property on <html> — no duplicated rules and no
+   per-component branching on the mode.
+
+   The accessibility preferences are `data-*` attributes on <html>, written by
+   app/layout.tsx from the cookie (see lib/prefs.ts) before the first paint, so
+   there is no flash and nothing to resolve in an effect.
+--------------------------------------------------------------------------- */
 :root {
-  --background: #D8F3DC;
-  --foreground: #081C15;
+  /* Both values: this is what enables light-dark() below, and with no explicit
+     preference the browser picks the side from the OS. The theme switch itself
+     is the one-line rules further down that force one side. */
+  color-scheme: light dark;
+
+  --background: light-dark(#D8F3DC, #081C15);
+  --foreground: light-dark(#081C15, #EAF7EC);
+
+  /* Surfaces, palest first: cards and dialogs sit on the theme's paper, the app
+     bar / details bars / slide frames on --surface-2, a picture's empty
+     placeholder on --surface-inset. */
+  --surface: light-dark(#ffffff, #1b3d2f);
+  --surface-2: light-dark(#f5f5f5, #17352a);
+  --surface-3: light-dark(#fbfdfb, #0b1a14);
+  --surface-green: light-dark(#d8f3dc, #123326);
+  --surface-inset: light-dark(rgba(8, 28, 21, 0.05), rgba(234, 247, 236, 0.06));
+
+  /* Ink for text sitting on one of those surfaces. */
+  --ink: light-dark(#081c15, #eaf7ec);
+  --ink-muted: light-dark(#5c6b63, #a7bdb1);
+  --ink-line: light-dark(rgba(8, 28, 21, 0.08), rgba(234, 247, 236, 0.14));
+  --ink-hairline: light-dark(rgba(8, 28, 21, 0.25), rgba(234, 247, 236, 0.3));
+
+  /* Accent: prices, focused fields, hover borders. */
+  --accent: light-dark(#2d6a4f, #74c69d);
+  --accent-strong: light-dark(#1b4332, #95d5b2);
+
+  /* The green pill the details page and the login dialog share. */
+  --pill-bg: light-dark(#d8f3dc, #1e4a37);
+  --pill-ink: light-dark(#081c15, #eaf7ec);
+
+  /* The site's one filled button. */
+  --btn-bg: light-dark(#081c15, #d8f3dc);
+  --btn-ink: light-dark(#ffffff, #081c15);
+  --btn-bg-hover: light-dark(#1b4332, #b7e4c7);
+
+  /* Controls that float over a picture — the carousel arrows and the gallery's
+     lightbox buttons — so they need their own translucent set. */
+  --overlay-bg: light-dark(rgba(255, 255, 255, 0.85), rgba(10, 23, 18, 0.72));
+  --overlay-bg-hover: light-dark(rgba(255, 255, 255, 0.98), rgba(10, 23, 18, 0.92));
+  --overlay-bg-disabled: light-dark(
+    rgba(255, 255, 255, 0.55),
+    rgba(10, 23, 18, 0.4)
+  );
+  --overlay-ink: light-dark(#081c15, #eaf7ec);
+  --overlay-ink-disabled: light-dark(
+    rgba(8, 28, 21, 0.35),
+    rgba(234, 247, 236, 0.35)
+  );
+  --overlay-shadow: light-dark(rgba(8, 28, 21, 0.35), rgba(0, 0, 0, 0.55));
+
+  --focus-ring: light-dark(#081c15, #95d5b2);
+  --focus-ring-width: 3px;
+
+  /* Text size is a multiplier on the root font size, so every rem in the app —
+     MUI's own typography included — scales together. */
+  --font-scale: 1;
 
   /* Scroll-linked wallpaper (see app/components/ScrollWallpaper.tsx):
-     --scroll-progress is 0 at the top of the page and 1 at the bottom. */
+     --scroll-progress is 0 at the top of the page and 1 at the bottom, and the
+     component writes the three --on-bg* values on scroll by interpolating the
+     ink endpoints below. Those endpoints are plain variables rather than
+     light-dark() calls because the component reads and mixes them in JS. */
   --scroll-progress: 0;
+  --wallpaper-ink-start: #081c15;
+  --wallpaper-ink-start-muted: rgba(8, 28, 21, 0.62);
+  --wallpaper-ink-start-line: rgba(8, 28, 21, 0.18);
+  --wallpaper-ink-end: #eaf7ec;
+  --wallpaper-ink-end-muted: rgba(234, 247, 236, 0.78);
+  --wallpaper-ink-end-line: rgba(234, 247, 236, 0.28);
 
-  /* Foregrounds for the text/UI that sits directly on the wallpaper. Kept in
-     sync with --scroll-progress by ScrollWallpaper.tsx so it stays readable as
-     the wallpaper darkens. */
-  --on-bg: #081c15;
-  --on-bg-muted: rgba(8, 28, 21, 0.62);
-  --on-bg-line: rgba(8, 28, 21, 0.18);
+  /* Foregrounds for the text and UI that sits directly on the wallpaper — the
+     top-of-page state, so the server's HTML and the first client frame agree
+     before the component has measured anything. */
+  --on-bg: var(--wallpaper-ink-start);
+  --on-bg-muted: var(--wallpaper-ink-start-muted);
+  --on-bg-line: var(--wallpaper-ink-start-line);
 }
 
+/* Dark: the wallpaper is dark from the top down, so the ink starts light and
+   stays there — only the three *start* values differ from the light theme. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --wallpaper-ink-start: #eaf7ec;
+  --wallpaper-ink-start-muted: rgba(234, 247, 236, 0.78);
+  --wallpaper-ink-start-line: rgba(234, 247, 236, 0.28);
+}
+
+/* The other half of the switch: forcing light-dark() to its light side. */
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+/* "System" is resolved by CSS, not by a pre-paint script: the root already
+   supports both schemes, so a dark-OS visitor gets the right colours in the
+   very first frame with no JS at all. Only the wallpaper ink has to be restated
+   here, because it is plain variables rather than a light-dark() pair. */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root[data-theme="system"] {
+    --wallpaper-ink-start: #eaf7ec;
+    --wallpaper-ink-start-muted: rgba(234, 247, 236, 0.78);
+    --wallpaper-ink-start-line: rgba(234, 247, 236, 0.28);
   }
 }
+
+/* --- accessibility preferences -------------------------------------------- */
+
+html {
+  font-size: calc(100% * var(--font-scale));
+}
+
+/* Text size is a step number the server writes onto <html> (`data-text="0"` to
+   `"5"`, `"-1"` to `"-5"`), so the scale is one rule per step. It is spelled out
+   because CSS cannot do arithmetic on an attribute value — `attr()` is still not
+   typed in every browser — and because having no JS in this path is the whole
+   point: the size is already right in the first frame, from the cookie.
+   The ramp is geometric: ×1.1 per step up, ×0.93 down, so the bottom stays
+   usable where an even ramp would have gone unreadable at the same length. */
+:root[data-text="-5"] {
+  --font-scale: 0.7;
+}
+
+:root[data-text="-4"] {
+  --font-scale: 0.75;
+}
+
+:root[data-text="-3"] {
+  --font-scale: 0.8;
+}
+
+:root[data-text="-2"] {
+  --font-scale: 0.86;
+}
+
+:root[data-text="-1"] {
+  --font-scale: 0.93;
+}
+
+:root[data-text="0"] {
+  --font-scale: 1;
+}
+
+:root[data-text="1"] {
+  --font-scale: 1.1;
+}
+
+:root[data-text="2"] {
+  --font-scale: 1.21;
+}
+
+:root[data-text="3"] {
+  --font-scale: 1.33;
+}
+
+:root[data-text="4"] {
+  --font-scale: 1.46;
+}
+
+:root[data-text="5"] {
+  --font-scale: 1.61;
+}
+
+/* High contrast is not a second palette — it is this palette with the softness
+   taken out: muted ink becomes full ink, hairlines become ink, the wallpaper's
+   secondary ink becomes solid, and the controls that float on a picture stop
+   being translucent. Everything is derived from the tokens above, so there is
+   no per-theme copy to keep in step. The two rules after the block are the part
+   that is obvious at a glance: every MUI surface gains a border and every field
+   underline doubles. */
+:root[data-contrast="high"] {
+  --ink-muted: var(--ink);
+  --ink-line: var(--ink-hairline);
+  --ink-hairline: var(--ink);
+
+  --overlay-bg: var(--surface);
+  --overlay-bg-hover: var(--surface-2);
+
+  --focus-ring-width: 4px;
+
+  --wallpaper-ink-start-muted: var(--wallpaper-ink-start);
+  --wallpaper-ink-start-line: var(--wallpaper-ink-start);
+  --wallpaper-ink-end-muted: var(--wallpaper-ink-end);
+  --wallpaper-ink-end-line: var(--wallpaper-ink-end);
+}
+
+/* Cards, the app bar, the drawer, dialogs, menus, popovers and the details
+   accordions are all MUI Papers, so one rule frames every surface. */
+:root[data-contrast="high"] .MuiPaper-root {
+  border: 2px solid var(--ink);
+}
+
+/* Underlined (standard) fields — the login dialog, the post form and the
+   drawer's selects. */
+:root[data-contrast="high"] .MuiInputBase-root:before,
+:root[data-contrast="high"] .MuiInputBase-root:hover:not(.Mui-disabled):before {
+  border-bottom-color: var(--ink);
+  border-bottom-width: 2px;
+}
+
+/* And the outlined ones, the header's search box. */
+:root[data-contrast="high"] .MuiOutlinedInput-notchedOutline {
+  border-color: var(--ink);
+  border-width: 2px;
+}
+
+:root[data-spacing="wide"] body {
+  letter-spacing: 0.08em;
+  word-spacing: 0.16em;
+}
+
+:root[data-spacing="wide"] p {
+  line-height: 1.85;
+}
+
+/* The reduced-motion rules exist twice on purpose: once for the explicit
+   preference and once for "system" when the OS asks for it. Both end up as the
+   same handful of overrides. */
+:root[data-motion="reduced"] *,
+:root[data-motion="reduced"] *::before,
+:root[data-motion="reduced"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-motion="system"] *,
+  :root[data-motion="system"] *::before,
+  :root[data-motion="system"] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Colour filters. The <filter> definitions live in
+   app/components/a11y/ColorFilters.tsx; the matrices are the standard
+   colour-vision-deficiency ones.
+   
+   They are applied to the page shell rather than to <html>: a filter creates a
+   containing block for fixed-position descendants, and only the document root
+   is exempt from that *in the spec* — no browser has to agree. The shell is the
+   page's own content (the app bar and the cards), while everything that has to
+   stay fixed — the wallpaper, the drawer, dialogs and menus, the read-aloud
+   chip — is either outside it or rendered into a portal at the body. Nothing
+   that must stay put is inside the filtered subtree. */
+:root[data-filter="protanopia"] .page-shell {
+  filter: url(#unifind-cvd-protanopia);
+}
+
+:root[data-filter="deuteranopia"] .page-shell {
+  filter: url(#unifind-cvd-deuteranopia);
+}
+
+:root[data-filter="tritanopia"] .page-shell {
+  filter: url(#unifind-cvd-tritanopia);
+}
+
+:root[data-filter="greyscale"] .page-shell {
+  filter: url(#unifind-cvd-greyscale);
+}
+
+/* --- focus and skip link -------------------------------------------------- */
+
+/* One visible ring for everything focusable. Components that draw their own
+   (the gallery's thumbnails, the hero button) win on specificity, which is
+   fine — they are matching the same look. */
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* The skip link is the first thing in the body, parked above the viewport until
+   it takes focus. */
+.skip-link {
+  position: absolute;
+  top: -3rem;
+  left: 0.75rem;
+  z-index: 3000;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  background: var(--btn-bg);
+  color: var(--btn-ink);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus-visible {
+  top: 0.75rem;
+}
+
+/* The element the skip link lands on is focused programmatically, and does not
+   need a ring for that. */
+main[tabindex="-1"]:focus-visible {
+  outline: none;
+}
+
+/* The elements the skip link and any focus jump land on. The header is sticky,
+   so they have to clear it. */
+html {
+  scroll-padding-top: 5rem;
+}
+
+#content {
+  scroll-margin-top: 5rem;
+}
+
+/* The element a read-aloud description is about. */
+[data-a11y-speaking] {
+  outline: var(--focus-ring-width) solid var(--focus-ring) !important;
+  outline-offset: 2px;
+}
+
+/* --- wallpaper ------------------------------------------------------------ */
 
 body {
   background: var(--background);
@@ -40,13 +350,22 @@ body {
 .scroll-wallpaper__gradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, #eaf7ec 0%, #d8f3dc 55%, #b7e4c7 100%);
+  background: linear-gradient(
+    180deg,
+    light-dark(#eaf7ec, #0f2b21) 0%,
+    light-dark(#d8f3dc, #0b1f18) 55%,
+    light-dark(#b7e4c7, #071310) 100%
+  );
 }
 
 .scroll-wallpaper__dim {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, #0d2a20 0%, #081c15 100%);
+  background: linear-gradient(
+    180deg,
+    light-dark(#0d2a20, #000000) 0%,
+    light-dark(#081c15, #04100b) 100%
+  );
   opacity: var(--scroll-progress);
   will-change: opacity;
 }

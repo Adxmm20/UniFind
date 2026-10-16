@@ -32,7 +32,7 @@ export default function ItemRow({
         // Room for the bookmark button so a long title never runs under it.
         pr: 7,
         transition: "box-shadow 0.2s ease, border-color 0.2s ease",
-        "&:hover": { boxShadow: 3, borderColor: "#2D6A4F" },
+        "&:hover": { boxShadow: 3, borderColor: "var(--accent)" },
       }}
     >
       {href ? (
@@ -54,7 +54,7 @@ export default function ItemRow({
           flexShrink: 0,
           borderRadius: 1.5,
           overflow: "hidden",
-          backgroundColor: "rgba(8, 28, 21, 0.05)",
+          backgroundColor: "var(--surface-inset)",
         }}
       >
         {image ? (
@@ -66,17 +66,17 @@ export default function ItemRow({
         <Typography
           variant="subtitle1"
           noWrap
-          sx={{ fontWeight: 700, color: "#081C15" }}
+          sx={{ fontWeight: 700, color: "var(--ink)" }}
         >
           {title}
         </Typography>
         {subtitle ? (
-          <Typography variant="body2" noWrap color="text.secondary">
+          <Typography variant="body2" noWrap sx={{ color: "var(--ink-muted)" }}>
             {subtitle}
           </Typography>
         ) : null}
         {meta ? (
-          <Typography variant="caption" noWrap sx={{ fontWeight: 600, color: "#2D6A4F" }}>
+          <Typography variant="caption" noWrap sx={{ fontWeight: 600, color: "var(--accent)" }}>
             {meta}
           </Typography>
         ) : null}

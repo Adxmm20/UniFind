@@ -19,6 +19,8 @@ export default function ProfilePage({
   return (
     <Box
       component="main"
+      id="content"
+      tabIndex={-1}
       sx={{
         width: "100%",
         maxWidth: 1280,

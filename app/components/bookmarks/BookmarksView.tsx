@@ -4,19 +4,20 @@ import { Box, FormControl, IconButton, MenuItem, Select, Typography } from "@mui
 import { useMemo, useState } from "react";
 import ItemCard, { type CardData } from "../ItemCard";
 import ItemRow from "../ItemRow";
+import { pillSelectSx } from "../formStyles";
+import AppIcon, { type IconName } from "../icons/AppIcon";
 
 export type BookmarkCard = CardData & {
   /** When it was saved, for the "Recently bookmarked" sort. */
   bookmarkedAt: string;
   /** Tiebreaker: timestamps only resolve to the second. */
   bookmarkId: number;
-  /** Events only. */
-  startTime?: string;
-  /** Rentals only. */
-  price?: number;
+  // `startTime` (events) and `price` (rentals/services) — what the "Event date"
+  // and "Price" sorts order on — come from CardData, which the home toolbar reads
+  // too, so they are declared once.
 };
 
-type Filter = "all" | "events" | "rentals";
+type Filter = "all" | "events" | "rentals" | "services";
 type SortKey = "recent" | "title" | "date" | "priceAsc" | "priceDesc";
 type View = "grid" | "list";
 
@@ -24,11 +25,12 @@ const FILTERS: { value: Filter; label: string }[] = [
   { value: "all", label: "All" },
   { value: "events", label: "Events" },
   { value: "rentals", label: "Rentals" },
+  { value: "services", label: "Services" },
 ];
 
-// Sort keys follow the filter, because the two record types sort on different
-// columns — only an event has a start time, only a rental has a price. "All"
-// therefore offers just the keys both types share.
+// Sort keys follow the filter, because the record kinds sort on different
+// columns — only an event has a start time, only a rental or service has a
+// price. "All" therefore offers just the keys every kind shares.
 const SORTS: Record<Filter, { value: SortKey; label: string }[]> = {
   all: [
     { value: "recent", label: "Recently bookmarked" },
@@ -45,27 +47,22 @@ const SORTS: Record<Filter, { value: SortKey; label: string }[]> = {
     { value: "priceDesc", label: "Price: high to low" },
     { value: "title", label: "Title A–Z" },
   ],
+  services: [
+    { value: "recent", label: "Recently bookmarked" },
+    { value: "priceAsc", label: "Price: low to high" },
+    { value: "priceDesc", label: "Price: high to low" },
+    { value: "title", label: "Title A–Z" },
+  ],
 };
-
-const pillSx = {
-  borderRadius: 999,
-  minWidth: 180,
-  backgroundColor: "rgba(255, 255, 255, 0.92)",
-  color: "#081C15",
-  "& .MuiSelect-select": { py: 1, fontSize: "0.9rem", fontWeight: 600 },
-  "& .MuiOutlinedInput-notchedOutline": { borderColor: "var(--on-bg-line)" },
-  "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#2D6A4F" },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#2D6A4F" },
-} as const;
 
 const toggleSx = {
   width: 40,
   height: 40,
-  backgroundColor: "rgba(255, 255, 255, 0.92)",
+  backgroundColor: "var(--surface)",
   border: "1px solid",
   borderColor: "var(--on-bg-line)",
-  color: "#081C15",
-  "&:hover": { backgroundColor: "#FFFFFF", borderColor: "#2D6A4F" },
+  color: "var(--ink)",
+  "&:hover": { backgroundColor: "var(--surface-2)", borderColor: "var(--accent)" },
 } as const;
 
 // Plain < / > rather than localeCompare: these order ISO-ish date strings where
@@ -134,7 +131,18 @@ function ListGlyph() {
   );
 }
 
-function EmptyState({ title, body }: { title: string; body: string }) {
+// `icon` is optional because the two empty states read differently: an empty
+// collection gets the bookmark mark, while a filter that matched nothing is a
+// transient result and stays word-only.
+function EmptyState({
+  title,
+  body,
+  icon,
+}: {
+  title: string;
+  body: string;
+  icon?: IconName;
+}) {
   return (
     <Box
       sx={{
@@ -146,6 +154,11 @@ function EmptyState({ title, body }: { title: string; body: string }) {
         textAlign: "center",
       }}
     >
+      {icon ? (
+        <Box sx={{ color: "var(--on-bg-muted)", mb: 2 }}>
+          <AppIcon name={icon} size={32} />
+        </Box>
+      ) : null}
       <Typography variant="h6" sx={{ fontWeight: 700, color: "var(--on-bg)", mb: 1 }}>
         {title}
       </Typography>
@@ -162,9 +175,11 @@ function EmptyState({ title, body }: { title: string; body: string }) {
 export default function BookmarksView({
   events,
   rentals,
+  services,
 }: {
   events: BookmarkCard[];
   rentals: BookmarkCard[];
+  services: BookmarkCard[];
 }) {
   const [filter, setFilter] = useState<Filter>("all");
   const [sort, setSort] = useState<SortKey>("recent");
@@ -181,18 +196,22 @@ export default function BookmarksView({
     const source =
       filter === "rentals"
         ? rentals
-        : filter === "events"
-          ? events
-          : [...events, ...rentals];
+        : filter === "services"
+          ? services
+          : filter === "events"
+            ? events
+            : [...events, ...rentals, ...services];
     return [...source].sort((a, b) => compare(a, b, sort));
-  }, [filter, sort, events, rentals]);
+  }, [filter, sort, events, rentals, services]);
 
   const listView = view === "list";
-  const total = events.length + rentals.length;
+  const total = events.length + rentals.length + services.length;
 
   return (
     <Box
-      component="section"
+      component="main"
+      id="content"
+      tabIndex={-1}
       sx={{
         width: "100%",
         maxWidth: 1400,
@@ -226,7 +245,7 @@ export default function BookmarksView({
             value={filter}
             onChange={(event) => changeFilter(event.target.value as Filter)}
             inputProps={{ "aria-label": "Filter bookmarks" }}
-            sx={pillSx}
+            sx={pillSelectSx}
           >
             {FILTERS.map((option) => (
               <MenuItem key={option.value} value={option.value}>
@@ -241,7 +260,7 @@ export default function BookmarksView({
             value={sort}
             onChange={(event) => setSort(event.target.value as SortKey)}
             inputProps={{ "aria-label": "Sort bookmarks" }}
-            sx={pillSx}
+            sx={pillSelectSx}
           >
             {SORTS[filter].map((option) => (
               <MenuItem key={option.value} value={option.value}>
@@ -266,8 +285,9 @@ export default function BookmarksView({
 
       {total === 0 ? (
         <EmptyState
+          icon="bookmark"
           title="No bookmarks yet"
-          body="Use the bookmark icon on any event or rental card to save it here."
+          body="Use the bookmark icon on any event, rental or service card to save it here."
         />
       ) : cards.length === 0 ? (
         <EmptyState

@@ -1,6 +1,7 @@
 "use client";
 
 import { Avatar, Button, Stack, Typography } from "@mui/material";
+import AppIcon from "../icons/AppIcon";
 
 // Drawer summary shown while nobody is signed in. Guests browse the site
 // exactly as before; the buttons just open the login prompt.
@@ -20,20 +21,19 @@ export default function GuestPanel({
           height: 48,
           mb: 1,
           fontWeight: 600,
-          backgroundColor: "#081C15",
+          backgroundColor: "var(--btn-bg)",
         }}
       >
         ?
       </Avatar>
 
-      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#081C15" }}>
+      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "var(--ink)" }}>
         Browsing as guest
       </Typography>
 
       <Typography
         variant="caption"
-        color="text.secondary"
-        sx={{ textAlign: "center", mb: 1.5 }}
+        sx={{ color: "var(--ink-muted)", textAlign: "center", mb: 1.5 }}
       >
         Log in to bookmark events and rentals.
       </Typography>
@@ -43,10 +43,12 @@ export default function GuestPanel({
           size="small"
           variant="contained"
           onClick={onLogin}
+          startIcon={<AppIcon name="login" size={18} />}
           sx={{
             textTransform: "none",
-            backgroundColor: "#081C15",
-            "&:hover": { backgroundColor: "#1B4332" },
+            backgroundColor: "var(--btn-bg)",
+            color: "var(--btn-ink)",
+            "&:hover": { backgroundColor: "var(--btn-bg-hover)" },
           }}
         >
           Log in
@@ -55,7 +57,12 @@ export default function GuestPanel({
           size="small"
           variant="outlined"
           onClick={onSignup}
-          sx={{ textTransform: "none", borderColor: "#081C15", color: "#081C15" }}
+          startIcon={<AppIcon name="addProfile" size={18} />}
+          sx={{
+            textTransform: "none",
+            borderColor: "var(--ink)",
+            color: "var(--ink)",
+          }}
         >
           Sign up
         </Button>

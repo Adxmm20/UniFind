@@ -22,8 +22,9 @@ export function getDb(): DatabaseSync {
   return readInstance;
 }
 
-// Read-write connection, used by the two things in this app that write at
-// runtime: auth (signup) and bookmark toggles. Page rendering never touches it.
+// Read-write connection, used by the three things in this app that write at
+// runtime: auth (signup), bookmark toggles and posting (app/actions/posts.ts).
+// Page rendering never touches it.
 export function getWriteDb(): DatabaseSync {
   if (!writeInstance) {
     writeInstance = new DatabaseSync(dbFile());

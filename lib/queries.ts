@@ -81,6 +81,12 @@ export function getEventsByOrganizer(email: string): EventRow[] {
   );
 }
 
+// The Details route resolves one record by its id rather than scanning the
+// list, so the page stays correct however many records exist.
+export function getEventById(eventId: number): EventRow | undefined {
+  return one<EventRow>("SELECT * FROM events WHERE event_id = ?", eventId);
+}
+
 // ---- items -----------------------------------------------------------------
 
 export function getRentals(): ItemRow[] {
@@ -89,8 +95,18 @@ export function getRentals(): ItemRow[] {
   );
 }
 
-// Every listing, rentals and services alike. The home page tabs only want
-// rentals (getRentals), but the Details route prerenders all record ids.
+// The home page's third tab. A service is an item whose picture lives in
+// public/img/Services as service-<n> rather than item-<n>, which itemImageIndex()
+// resolves without the caller needing to know the type.
+export function getServices(): ItemRow[] {
+  return all<ItemRow>(
+    "SELECT * FROM items WHERE item_type = 'service' ORDER BY item_id",
+  );
+}
+
+// Every listing, rentals and services alike. The home page reads the two types
+// through getRentals()/getServices() because they get a tab each, but the
+// Details route prerenders all record ids from this.
 export function getItems(): ItemRow[] {
   return all<ItemRow>("SELECT * FROM items ORDER BY item_id");
 }
@@ -101,6 +117,19 @@ export function getItemsByProvider(email: string): ItemRow[] {
     email,
   );
 }
+
+// The Details route's counterpart to getEventById: one listing by id, whatever
+// its item_type.
+export function getItemById(itemId: number): ItemRow | undefined {
+  return one<ItemRow>("SELECT * FROM items WHERE item_id = ?", itemId);
+}
+
+// ---- search ----------------------------------------------------------------
+
+// Search is not SQL here: lib/search.ts scores the rows themselves so that the
+// results page, the suggestion endpoint and the cards' "by <handle>" note all
+// share one matcher. The queries above (getEvents/getItems/getAllUsernames) are
+// all it needs. See *Search* in AGENTS.md.
 
 // ---- users -----------------------------------------------------------------
 
@@ -160,3 +189,29 @@ export function getRsvpsForUser(email: string): RsvpRow[] {
     email,
   );
 }
+
+// ---- posting ---------------------------------------------------------------
+
+// The /post form offers these as dropdowns so a new record reuses the
+// vocabulary the catalogue already has instead of inventing near-duplicates
+// ("Academic & Talk" vs "Academic and Talk"). The action still trims whatever
+// it receives — these only shape the form.
+export function getEventCategories(): string[] {
+  return all<{ category: string }>(
+    "SELECT DISTINCT category FROM events ORDER BY category",
+  ).map((row) => row.category);
+}
+
+export function getItemCategories(itemType: "rent" | "service"): string[] {
+  return all<{ category: string }>(
+    "SELECT DISTINCT category FROM items WHERE item_type = ? ORDER BY category",
+    itemType,
+  ).map((row) => row.category);
+}
+
+export function getPriceUnits(): string[] {
+  return all<{ unit: string }>(
+    "SELECT DISTINCT price_unit AS unit FROM items WHERE price_unit IS NOT NULL ORDER BY unit",
+  ).map((row) => row.unit);
+}
+

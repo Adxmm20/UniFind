@@ -15,7 +15,16 @@ export function proxy(request: NextRequest) {
 
   // Only single-segment routes are profiles ("/" and asset paths are excluded
   // by the matcher; multi-segment paths are not user profiles).
-  const username = decodeURIComponent(pathname.replace(/^\//, ""));
+  //
+  // The path is user input, so a malformed percent-escape ("/%", "/a%zz") makes
+  // decodeURIComponent throw — that must not become a 500. Such a path cannot
+  // name a profile, so it falls through to the same 404 as an unknown username.
+  let username: string;
+  try {
+    username = decodeURIComponent(pathname.replace(/^\//, ""));
+  } catch {
+    return NextResponse.rewrite(new URL("/__not-found__/404", request.url));
+  }
   if (!username || username.includes("/")) return NextResponse.next();
   if (getUserByUsername(username)) return NextResponse.next();
 
@@ -24,9 +33,15 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // `bookmarks` is carved out alongside `_next/` and `img/`: every other
-  // single-segment path is treated as a profile username, so without this the
-  // proxy would look up a user called "bookmarks", fail, and rewrite the
-  // bookmarks page to a 404. Any future top-level route needs the same entry.
-  matcher: ["/((?!_next/|img/|bookmarks|.*\\.).*)"],
+  // `bookmarks`, `post`, `search` and `about` are carved out alongside `_next/`
+  // and `img/`: every other single-segment path is treated as a profile username,
+  // so without this the proxy would look up a user called "bookmarks" (or "post",
+  // or "search", or "about"), fail, and rewrite the page to a 404. Any future
+  // top-level route needs the same entry.
+  //
+  // `post`, `search` and `about` are written as `x(?:/|$)` rather than a bare
+  // prefix so that their exclusion cannot swallow an unrelated username that
+  // merely starts with the same word ("postman", "searchlight", "aboutman") —
+  // `bookmarks` predates that worry and keeps the plain form.
+  matcher: ["/((?!_next/|img/|bookmarks|post(?:/|$)|search(?:/|$)|about(?:/|$)|.*\\.).*)"],
 };

@@ -3,6 +3,7 @@
 import { Box, Button, Typography } from "@mui/material";
 import { useState } from "react";
 import LoginDialog, { type AuthTab } from "../auth/LoginDialog";
+import AppIcon from "../icons/AppIcon";
 
 // Shown when a guest opens /bookmarks directly. The drawer's Bookmark item
 // still just opens the prompt (guests never navigate here by clicking), so
@@ -14,7 +15,9 @@ export default function BookmarksGuest() {
   return (
     <>
       <Box
-        component="section"
+        component="main"
+        id="content"
+        tabIndex={-1}
         sx={{
           width: "100%",
           maxWidth: 560,
@@ -41,15 +44,13 @@ export default function BookmarksGuest() {
             setTab("login");
             setOpen(true);
           }}
+          startIcon={<AppIcon name="login" size={18} />}
           sx={{
             textTransform: "none",
             fontWeight: 600,
-            // Pinned rather than inherited: this component renders outside
-            // Header's ThemeProvider, so an unstyled contained button would
-            // fall back to MUI's default blue.
-            backgroundColor: "#081C15",
-            color: "#FFFFFF",
-            "&:hover": { backgroundColor: "#1B4332" },
+            backgroundColor: "var(--btn-bg)",
+            color: "var(--btn-ink)",
+            "&:hover": { backgroundColor: "var(--btn-bg-hover)" },
           }}
         >
           Log in

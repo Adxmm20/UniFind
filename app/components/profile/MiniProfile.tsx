@@ -19,7 +19,7 @@ export default function MiniProfile({ user }: { user: SessionUser }) {
         >
           <Avatar
             alt={user.username}
-            sx={{ width: 48, height: 48, fontWeight: 600, backgroundColor: "#081C15" }}
+            sx={{ width: 48, height: 48, fontWeight: 600, backgroundColor: "var(--btn-bg)" }}
           >
             {initial}
           </Avatar>
@@ -27,16 +27,16 @@ export default function MiniProfile({ user }: { user: SessionUser }) {
           <Stack sx={{ minWidth: 0 }}>
             <Typography
               variant="subtitle2"
-              sx={{ fontWeight: 700, color: "#081C15" }}
+              sx={{ fontWeight: 700, color: "var(--ink)" }}
               noWrap
             >
               @{user.username}
             </Typography>
-            <Typography variant="caption" color="text.secondary" noWrap>
+            <Typography variant="caption" noWrap sx={{ color: "var(--ink-muted)" }}>
               {user.email}
             </Typography>
             {user.phone ? (
-              <Typography variant="caption" color="text.secondary" noWrap>
+              <Typography variant="caption" noWrap sx={{ color: "var(--ink-muted)" }}>
                 {user.phone}
               </Typography>
             ) : null}

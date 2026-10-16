@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { bookmarkState, eventCards, itemCards } from "@/app/components/cardData";
 import Header from "@/app/components/Header";
 import type { CardData } from "@/app/components/ItemCard";
 import ProfilePage from "@/app/components/profile/ProfilePage";
 import { getSessionUser } from "@/lib/auth";
 import { getBookmarkIds } from "@/lib/bookmarks";
+import { formatDate } from "@/lib/format";
+import { imageIndex, itemImageIndex } from "@/lib/images";
 import {
   getAllUsernames,
   getEventsByOrganizer,
@@ -33,23 +36,6 @@ export async function generateMetadata({
   };
 }
 
-function priceLabel(price: number, unit: string | null): string {
-  return `RM ${price.toFixed(2)} ${(unit ?? "flat_rate").replace(/_/g, " ")}`;
-}
-
-// Deterministic (UTC, fixed locale) so the string is identical on server and
-// client — avoids hydration drift.
-function formatDate(value: string): string {
-  const date = new Date(`${value.replace(" ", "T")}Z`);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString("en-GB", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  });
-}
-
 export default async function UserProfilePage({
   params,
 }: {
@@ -62,32 +48,29 @@ export default async function UserProfilePage({
 
   const local = user.email.slice(0, user.email.indexOf("@"));
 
-  // The viewer's bookmarks, not the profile owner's — saving someone else's
-  // listing from their own page is the normal case. Guests get the control with
-  // `signedIn: false`, which raises the login prompt instead of writing.
-  const bookmarkIds = sessionUser ? getBookmarkIds(sessionUser.email) : null;
-  const bookmark = (recordId: string) => ({
-    signedIn: sessionUser !== null,
-    saved: bookmarkIds ? bookmarkIds.has(recordId) : false,
-  });
+  // Rows become cards through the one mapping (app/components/cardData.ts), so a
+  // profile card carries the record's picture exactly like a home or search card
+  // — building the CardData by hand here is what left the events imageless.
+  // `bookmark` is still the *viewer's* bookmarks, not the profile owner's:
+  // saving someone else's listing from their own page is the normal case, and a
+  // guest gets `signedIn: false`, which raises the login prompt instead of
+  // writing.
+  const bookmark = bookmarkState(
+    sessionUser,
+    sessionUser ? getBookmarkIds(sessionUser.email) : null,
+  );
 
-  const events: CardData[] = getEventsByOrganizer(user.email).map((event) => ({
-    id: `event-${event.event_id}`,
-    title: event.title,
-    subtitle: event.category,
-    meta: event.venue_name,
-    href: `/details/event-${event.event_id}`,
-    bookmark: bookmark(`event-${event.event_id}`),
-  }));
+  const events = eventCards(
+    getEventsByOrganizer(user.email),
+    imageIndex("Events"),
+    bookmark,
+  );
 
-  const listings: CardData[] = getItemsByProvider(user.email).map((item) => ({
-    id: `item-${item.item_id}`,
-    title: item.title,
-    subtitle: item.category,
-    meta: priceLabel(item.price, item.price_unit),
-    href: `/details/item-${item.item_id}`,
-    bookmark: bookmark(`item-${item.item_id}`),
-  }));
+  const listings = itemCards(
+    getItemsByProvider(user.email),
+    itemImageIndex(),
+    bookmark,
+  );
 
   const reviews: CardData[] = getReviewsForProvider(user.email).map((review) => ({
     id: `review-${review.review_id}`,

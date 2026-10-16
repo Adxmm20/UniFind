@@ -16,6 +16,7 @@ import {
   signupAction,
   type AuthFormState,
 } from "@/app/actions/auth";
+import { fieldSx } from "../formStyles";
 import SocialIcons from "./SocialIcons";
 
 export type AuthTab = "login" | "signup";
@@ -75,27 +76,8 @@ const SIGNUP_FIELDS: FieldSpec[] = [
   },
 ];
 
-// Minimalist underline inputs: the standard variant plus small, wide-tracked
-// uppercase labels. The focus colours are pinned rather than inherited, because
-// this dialog is rendered from two places — inside Header's ThemeProvider, and
-// standalone from the bookmarks page — and only the first would otherwise pick
-// up the site palette.
-const fieldSx = {
-  "& .MuiInputLabel-root": {
-    textTransform: "uppercase",
-    letterSpacing: "0.12em",
-    fontSize: "0.7rem",
-    fontWeight: 600,
-  },
-  "& .MuiInputLabel-root.Mui-focused": { color: "#2D6A4F" },
-  "& .MuiInput-underline:before": { borderBottomColor: "rgba(8, 28, 21, 0.25)" },
-  "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
-    borderBottomColor: "#2D6A4F",
-  },
-  "& .MuiInput-underline:after": { borderBottomColor: "#2D6A4F" },
-  "& .MuiInputBase-input": { fontSize: "0.95rem", py: 1 },
-  "& .MuiFormHelperText-root": { fontSize: "0.7rem", mt: 0.75 },
-} as const;
+// Minimalist underline inputs — the shared look lives in ../formStyles so the
+// /post form uses the very same field without a second copy.
 
 const actionSx = {
   textTransform: "uppercase",
@@ -106,12 +88,12 @@ const actionSx = {
   py: 0.5,
   minWidth: 0,
   borderRadius: 0,
-  borderBottom: "2px solid #081C15",
-  color: "#081C15",
+  borderBottom: "2px solid var(--ink)",
+  color: "var(--ink)",
   "&:hover": {
     backgroundColor: "transparent",
-    borderColor: "#1B4332",
-    color: "#1B4332",
+    borderColor: "var(--accent-strong)",
+    color: "var(--accent-strong)",
   },
 } as const;
 
@@ -121,7 +103,7 @@ const linkSx = {
   minWidth: 0,
   fontSize: "0.78rem",
   textTransform: "none",
-  color: "#3A5A46",
+  color: "var(--accent)",
   "&:hover": { backgroundColor: "transparent", textDecoration: "underline" },
 } as const;
 
@@ -203,7 +185,7 @@ export default function LoginDialog({
             flexShrink: 0,
             alignItems: "center",
             justifyContent: "center",
-            backgroundColor: "#D8F3DC",
+            backgroundColor: "var(--surface-green)",
             px: 3,
           }}
         >
@@ -222,7 +204,7 @@ export default function LoginDialog({
             width: { xs: "100%", sm: "65%" },
             display: "flex",
             flexDirection: "column",
-            backgroundColor: "#FBFDFB",
+            backgroundColor: "var(--surface-3)",
             px: { xs: 3, sm: 6 },
             py: { xs: 4, sm: 5 },
           }}
@@ -234,7 +216,7 @@ export default function LoginDialog({
               fontSize: "1.5rem",
               fontWeight: 800,
               letterSpacing: "0.18em",
-              color: "#081C15",
+              color: "var(--ink)",
               mb: 3,
             }}
           >

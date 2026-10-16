@@ -6,16 +6,13 @@ import BookmarksView, {
 } from "@/app/components/bookmarks/BookmarksView";
 import { getSessionUser } from "@/lib/auth";
 import { getBookmarkedEvents, getBookmarkedItems } from "@/lib/bookmarks";
+import { priceLabel } from "@/lib/format";
 import { imageIndex, itemImageIndex } from "@/lib/images";
 
 export const metadata: Metadata = {
   title: "Bookmarks · UniFind",
-  description: "Events and rentals you have saved.",
+  description: "Events, rentals and services you have saved.",
 };
-
-function priceLabel(price: number, unit: string | null): string {
-  return `RM ${price.toFixed(2)} ${(unit ?? "flat_rate").replace(/_/g, " ")}`;
-}
 
 // Every card here is bookmarked by definition, so `bookmarked` is always true —
 // which is what renders the toggle in its filled state, ready to unsave.
@@ -49,7 +46,9 @@ export default async function BookmarksPage() {
     bookmark: { signedIn: true, saved: true },
   }));
 
-  const rentals: BookmarkCard[] = getBookmarkedItems(user.email).map((item) => ({
+  const bookmarkedItems = getBookmarkedItems(user.email);
+
+  const itemCard = (item: (typeof bookmarkedItems)[number]): BookmarkCard => ({
     id: `item-${item.item_id}`,
     title: item.title,
     subtitle: item.category,
@@ -60,12 +59,22 @@ export default async function BookmarksPage() {
     bookmarkId: item.bookmark_id,
     price: item.price,
     bookmark: { signedIn: true, saved: true },
-  }));
+  });
+
+  // Rentals and services share the items table, so they are split here on
+  // item_type — the filter has an entry for each, and a service must not be
+  // filed under Rentals.
+  const rentals: BookmarkCard[] = bookmarkedItems
+    .filter((item) => item.item_type !== "service")
+    .map(itemCard);
+  const services: BookmarkCard[] = bookmarkedItems
+    .filter((item) => item.item_type === "service")
+    .map(itemCard);
 
   return (
     <>
       <Header user={user} />
-      <BookmarksView events={events} rentals={rentals} />
+      <BookmarksView events={events} rentals={rentals} services={services} />
     </>
   );
 }

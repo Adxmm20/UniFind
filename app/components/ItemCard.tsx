@@ -14,10 +14,27 @@ export type CardData = {
   /** When set, the whole card links here (e.g. /details/event-1). */
   href?: string;
   /**
+   * A line under the subtitle that explains a *search* result ("by
+   * josa_organizer") — the record's own fields cannot show why it matched. Only
+   * the search page sets it, so a card still looks the same wherever it is
+   * found.
+   */
+  note?: string;
+  /**
    * Absent when the record cannot be bookmarked — a review, say. Guests get the
    * control too, with `signedIn: false`; clicking it raises the login prompt.
    */
   bookmark?: { signedIn: boolean; saved: boolean };
+  /**
+   * The record's own category — the facet the home grid filters on. Held apart
+   * from `subtitle` even though events and items put the same value there, so a
+   * card whose second line ever says something else cannot break the filter.
+   */
+  category?: string;
+  /** Events only: what the home "Soonest / Latest" sorts order on. */
+  startTime?: string;
+  /** Items only: what the home price sorts order on (the raw number). */
+  price?: number;
 };
 
 export default function ItemCard({
@@ -27,6 +44,7 @@ export default function ItemCard({
   meta,
   image,
   href,
+  note,
   bookmark,
   sizes = "(max-width: 600px) 100vw, (max-width: 900px) 50vw, 33vw",
 }: CardData & { sizes?: string }) {
@@ -45,7 +63,7 @@ export default function ItemCard({
         "&:hover": {
           transform: "translateY(-2px)",
           boxShadow: 3,
-          borderColor: "#2D6A4F",
+          borderColor: "var(--accent)",
         },
       }}
     >
@@ -66,7 +84,7 @@ export default function ItemCard({
         sx={{
           position: "relative",
           aspectRatio: "16 / 10",
-          backgroundColor: "rgba(8, 28, 21, 0.05)",
+          backgroundColor: "var(--surface-inset)",
         }}
       >
         {image ? (
@@ -77,18 +95,23 @@ export default function ItemCard({
       <CardContent
         sx={{ display: "flex", flexDirection: "column", gap: 0.5, flexGrow: 1 }}
       >
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#081C15" }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "var(--ink)" }}>
           {title}
         </Typography>
         {subtitle ? (
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" sx={{ color: "var(--ink-muted)" }}>
             {subtitle}
+          </Typography>
+        ) : null}
+        {note ? (
+          <Typography variant="caption" sx={{ color: "var(--ink-muted)" }}>
+            {note}
           </Typography>
         ) : null}
         {meta ? (
           <Typography
             variant="caption"
-            sx={{ mt: "auto", pt: 1, fontWeight: 600, color: "#2D6A4F" }}
+            sx={{ mt: "auto", pt: 1, fontWeight: 600, color: "var(--accent)" }}
           >
             {meta}
           </Typography>

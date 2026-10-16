@@ -18,7 +18,7 @@ const BOOKMARK_PATH =
 //
 // `pointer-events` is toggled alongside `opacity`: an invisible button that still
 // accepts clicks would be a trap sitting on top of the card.
-const wrapperSx = {
+const overlayWrapperSx = {
   position: "absolute",
   top: 8,
   right: 8,
@@ -33,15 +33,26 @@ const wrapperSx = {
   "@media (hover: none)": { opacity: 1, pointerEvents: "auto" },
 } as const;
 
+// The details page has no card to hover and no overlay corner to sit in, so
+// there the button is simply always visible in the flow beside the heading.
+const inlineWrapperSx = { flex: "0 0 auto" } as const;
+
 export default function BookmarkButton({
   recordId,
   signedIn,
   saved,
+  variant = "overlay",
 }: {
   recordId: string;
   /** A guest gets the same control, but it opens the login prompt instead. */
   signedIn: boolean;
   saved: boolean;
+  /**
+   * `overlay` (default) is the card control: pinned to the top-right corner and
+   * revealed on hover/focus. `inline` drops the positioning and the reveal for
+   * surfaces that are not a card.
+   */
+  variant?: "overlay" | "inline";
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -74,7 +85,7 @@ export default function BookmarkButton({
   }
 
   return (
-    <Box sx={wrapperSx}>
+    <Box sx={variant === "inline" ? inlineWrapperSx : overlayWrapperSx}>
       <IconButton
         size="small"
         onClick={handleClick}
@@ -89,10 +100,10 @@ export default function BookmarkButton({
         sx={{
           width: 34,
           height: 34,
-          backgroundColor: "rgba(255, 255, 255, 0.92)",
+          backgroundColor: "var(--surface)",
           boxShadow: 1,
-          color: isSaved ? "#2D6A4F" : "#081C15",
-          "&:hover": { backgroundColor: "#FFFFFF" },
+          color: isSaved ? "var(--accent)" : "var(--ink)",
+          "&:hover": { backgroundColor: "var(--surface-2)" },
         }}
       >
         <svg

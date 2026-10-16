@@ -24,9 +24,9 @@ export default function ProfileSidebar({
           width: { xs: 160, md: 200 },
           height: { xs: 160, md: 200 },
           mx: { xs: "auto", md: 0 },
-          fontSize: 72,
+          fontSize: "4.5rem",
           fontWeight: 600,
-          backgroundColor: "#081C15",
+          backgroundColor: "var(--btn-bg)",
         }}
       >
         {user.username.charAt(0).toUpperCase()}

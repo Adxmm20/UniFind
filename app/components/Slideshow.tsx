@@ -4,6 +4,7 @@ import { Box, IconButton } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { usePrefs } from "./a11y/prefsContext";
 
 // A slide is named after the record it represents ("event-1", "item-4"), so it
 // can link straight to that record's details page.
@@ -30,10 +31,10 @@ const SIDE_SHIFT = 0.99; // neighbour offset, as a multiple of --slide-w
 const FAR_SHIFT = 1.85; // where the off-stage slides wait
 const AUTOPLAY_MS = 3500;
 
-// The header's AppBar is `color="default"`, which on this light theme resolves
-// to MUI's grey[100]. The slide frames borrow it so the carousel's chrome sits
-// in the same pale neutral as the app bar instead of a hard black.
-const FRAME_COLOR = "#F5F5F5";
+// The slide frames borrow the app bar's colour (--surface-2, which the MUI theme
+// pins on the AppBar too) so the carousel's chrome sits in the same neutral as
+// the bar rather than a hard black — and follows the theme with it.
+const FRAME_COLOR = "var(--surface-2)";
 
 // SIDE_SCALE is what keeps the neighbours inside the stage. Now that they turn
 // away from the middle, the corner that gets magnified is the *inner* one:
@@ -78,24 +79,33 @@ const arrowSx = {
   zIndex: 5,
   width: { xs: 40, md: 52 },
   height: { xs: 40, md: 52 },
-  color: "#081C15",
-  fontSize: { xs: 22, md: 30 },
+  color: "var(--overlay-ink)",
+  fontSize: { xs: "1.375rem", md: "1.875rem" },
   fontWeight: 700,
   lineHeight: 1,
-  backgroundColor: "rgba(255, 255, 255, 0.85)",
+  backgroundColor: "var(--overlay-bg)",
   backdropFilter: "blur(10px)",
   WebkitBackdropFilter: "blur(10px)",
-  boxShadow: "0 6px 20px rgba(8, 28, 21, 0.35)",
+  boxShadow: "0 6px 20px var(--overlay-shadow)",
   transition: "background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease",
-  "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.98)" },
+  "&:hover": { backgroundColor: "var(--overlay-bg-hover)" },
   // The pinned `color` above would otherwise outrank MUI's own disabled rule.
+  // `pointerEvents` is the exception: MUI turns it *off* while disabled, which
+  // would let a click fall straight through the arrow onto the slide behind it
+  // — during the cooldown the arrow sits over the neighbour panel, so that
+  // stray click would open the wrong record. The arrow keeps its own square
+  // instead, with the cursor the dots already use, so a cooldown click simply
+  // goes nowhere.
   "&.Mui-disabled": {
-    color: "rgba(8, 28, 21, 0.35)",
-    backgroundColor: "rgba(255, 255, 255, 0.55)",
+    color: "var(--overlay-ink-disabled)",
+    backgroundColor: "var(--overlay-bg-disabled)",
+    pointerEvents: "auto",
+    cursor: "default",
   },
 };
 
 export default function Slideshow({ slides }: { slides: Slide[] }) {
+  const { reducedMotion } = usePrefs();
   const count = slides.length;
 
   // Cumulative rotation (in slide steps) so the carousel always advances in the
@@ -142,11 +152,15 @@ export default function Slideshow({ slides }: { slides: Slide[] }) {
   // and hovering pauses it, so the only candidate is a tap landing right after a
   // tick (which simply moves twice). Locking it too would instead swallow a tap
   // on arrows that look live.
+  //
+  // Reduced motion stops it entirely — a carousel that advances on its own is
+  // the exact thing that preference is about (the panel's own transition is cut
+  // to nothing by the global reduced-motion rule in globals.css).
   useEffect(() => {
-    if (paused || count <= 1) return;
+    if (paused || reducedMotion || count <= 1) return;
     const id = setInterval(() => setRotation((prev) => prev + 1), AUTOPLAY_MS);
     return () => clearInterval(id);
-  }, [paused, count]);
+  }, [paused, reducedMotion, count]);
 
   if (count === 0) {
     return null;
@@ -243,11 +257,26 @@ export default function Slideshow({ slides }: { slides: Slide[] }) {
                   priority={i === 0}
                   style={{ objectFit: "cover" }}
                 />
-                {/* Transparent overlay so the whole panel opens its details page. */}
+                {/* Transparent overlay so the whole panel opens its details
+                    page. Inert for the cooldown: the panels are still moving
+                    then, so a click — or a tap — that was meant for an arrow
+                    must not open whichever record happens to be under the
+                    pointer. Keyboard focus is unaffected (pointer-events is a
+                    pointer-only concern).
+                    Outside the lock the overlay sets no pointer-events of its
+                    own, so it *inherits* the panel's: "auto" on stage, "none"
+                    for the two parked off-stage panels. Setting "auto" here
+                    would re-enable an invisible panel that the parent had
+                    deliberately switched off. */}
                 <Link
                   href={slide.href}
                   aria-label={`View details for ${slide.id}`}
-                  style={{ position: "absolute", inset: 0, zIndex: 1 }}
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    zIndex: 1,
+                    pointerEvents: locked ? "none" : undefined,
+                  }}
                 />
               </Box>
             </Box>
