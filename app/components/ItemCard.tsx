@@ -35,6 +35,16 @@ export type CardData = {
   startTime?: string;
   /** Items only: what the home price sorts order on (the raw number). */
   price?: number;
+  /**
+   * Where the record is: an event's venue, an item's location coverage. The one
+   * facet the two record kinds agree on, which is what lets the home grid's
+   * location filter read it for every tab. Note that only an event's card
+   * *shows* it — as its `meta` line, the venue — while an item's card carries its
+   * price there instead.
+   */
+  location?: string;
+  /** Events only: whether the event counts for STAR points (see /post). */
+  starPoints?: boolean;
 };
 
 export default function ItemCard({

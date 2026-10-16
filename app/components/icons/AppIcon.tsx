@@ -5,10 +5,10 @@ import { Box, type SxProps, type Theme } from "@mui/material";
 // `…Profile` family for the drawer's account panel, `addProfile` for sign-up,
 // `postAdd` for the drawer's Post row, `pictureAdd` for the /post form's
 // picture affordance, `add`/`remove` for the accessibility panel's text-size
-// stepper, `accessibility` for the panel itself, `filter`/`sort` for the home
-// grid's two pills — Material's `filter_alt` funnel and `swap_vert` arrows,
-// which stay distinguishable where Material's own `sort` glyph, three stacked
-// bars, could be read as a filter list).
+// stepper, `accessibility` for the panel itself, `filter`/`sort`/`location` for
+// the home grid's pills — Material's `filter_alt` funnel, `swap_vert` arrows and
+// `location_on` pin. The arrows stand in for Material's own `sort` glyph, whose
+// three stacked bars could be read as a filter list next to the funnel).
 //
 // They are painted with `mask-image` rather than loaded through `<img>`. An
 // `<img>`-embedded SVG is its own document: its `fill` cannot see the page, so
@@ -38,7 +38,8 @@ export type IconName =
   | "remove"
   | "accessibility"
   | "filter"
-  | "sort";
+  | "sort"
+  | "location";
 
 export default function AppIcon({
   name,

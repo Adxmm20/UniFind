@@ -1,6 +1,16 @@
 "use client";
 
-import { Box, FormControl, InputAdornment, MenuItem, Select, Tab, Tabs } from "@mui/material";
+import {
+  Box,
+  Checkbox,
+  FormControl,
+  FormControlLabel,
+  InputAdornment,
+  MenuItem,
+  Select,
+  Tab,
+  Tabs,
+} from "@mui/material";
 import { useMemo, useState } from "react";
 import { pillSelectSx } from "./formStyles";
 import AppIcon, { type IconName } from "./icons/AppIcon";
@@ -21,6 +31,8 @@ const TAB_LABELS: Record<HomeTab, string> = {
 // What the filter's "everything" row carries. It cannot collide with a real
 // category: those are catalogue values, never "all".
 const ALL = "all";
+
+const ALL_LOCATIONS = "All locations";
 
 type SortKey = "default" | "latest" | "title" | "priceAsc" | "priceDesc";
 
@@ -53,15 +65,24 @@ const SORTS: Record<HomeTab, SortOption[]> = {
   services: ITEM_SORTS,
 };
 
-type Facet = { category: string; sort: SortKey };
-
-const DEFAULT_FACETS: Record<HomeTab, Facet> = {
-  events: { category: ALL, sort: "default" },
-  rentals: { category: ALL, sort: "default" },
-  services: { category: ALL, sort: "default" },
+type Facet = {
+  category: string;
+  location: string;
+  /**
+   * Events only — the tab's checkbox. Never set on the items tabs, which do not
+   * render it, so the filter reads it unguarded.
+   */
+  starPoints: boolean;
+  sort: SortKey;
 };
 
-// Plain code-unit comparison rather than localeCompare: the category list is
+const DEFAULT_FACETS: Record<HomeTab, Facet> = {
+  events: { category: ALL, location: ALL, starPoints: false, sort: "default" },
+  rentals: { category: ALL, location: ALL, starPoints: false, sort: "default" },
+  services: { category: ALL, location: ALL, starPoints: false, sort: "default" },
+};
+
+// Plain code-unit comparison rather than localeCompare: the facet lists are
 // built during the very first render, and Node and the browser do not always
 // collate the same way, so a locale-aware order could differ between the server
 // markup and the hydrated client.
@@ -69,6 +90,18 @@ function byText(a: string, b: string): number {
   if (a < b) return -1;
   if (a > b) return 1;
   return 0;
+}
+
+// The distinct values of one facet, straight off the tab's own cards — so a
+// filter's options cannot drift from the catalogue and every option matches at
+// least one card.
+function optionsOf(cards: CardData[], value: (card: CardData) => string | undefined): string[] {
+  const seen = new Set<string>();
+  for (const card of cards) {
+    const option = value(card);
+    if (option) seen.add(option);
+  }
+  return [...seen].sort(byText);
 }
 
 // The glyph that says what a pill is for. MUI wraps `startAdornment` in an
@@ -130,18 +163,24 @@ export default function HomeTabs({
   const list = lists[activeTab];
   const facet = facets[activeTab];
 
-  // The filter offers exactly the categories this tab's own cards carry, so it
-  // cannot drift from the catalogue and every option matches at least one card.
-  const categories = useMemo(() => {
-    const seen = new Set<string>();
-    for (const card of list) if (card.category) seen.add(card.category);
-    return [...seen].sort(byText);
-  }, [list]);
+  // Both facets come off the cards this tab is showing (see optionsOf). The
+  // star-points box only appears where it can actually narrow something: on the
+  // Events tab, and only while at least one event carries a star. Deliberately
+  // read from the whole tab list rather than the filtered subset, so the control
+  // does not flicker away as the other two filters are used.
+  const categories = useMemo(() => optionsOf(list, (card) => card.category), [list]);
+  const locations = useMemo(() => optionsOf(list, (card) => card.location), [list]);
+  const showStarPoints = activeTab === "events" && list.some((card) => card.starPoints);
 
   const cards = useMemo(() => {
-    const matching = list.filter(
-      (card) => facet.category === ALL || card.category === facet.category,
-    );
+    const matching = list.filter((card) => {
+      if (facet.category !== ALL && card.category !== facet.category) return false;
+      if (facet.location !== ALL && card.location !== facet.location) return false;
+      // `starPoints` is only ever set by the Events tab's checkbox, so this
+      // needs no tab guard: on the items tabs it is false by construction.
+      if (facet.starPoints && !card.starPoints) return false;
+      return true;
+    });
     // `filter` has already copied the array, so sorting it in place is safe.
     return facet.sort === "default"
       ? matching
@@ -239,6 +278,64 @@ export default function HomeTabs({
                 ))}
               </Select>
             </FormControl>
+          ) : null}
+
+          {/* Locations can be long — "Room 2.4, Blok D, Mahallah Salahuddin,
+              IIUM Gombak" is a real coverage value — so this pill is capped and
+              ellipsised (the selected text is repeated in its title) and the
+              menu drops its usual min-width pin (`autoWidth`) so an option is
+              never cut off where you actually choose it. Like the category pill,
+              it stays away when there is nothing to choose between. */}
+          {locations.length > 1 ? (
+            <FormControl size="small">
+              <Select
+                value={facet.location}
+                onChange={(event) => setFacet({ location: event.target.value })}
+                inputProps={{ "aria-label": `Filter ${TAB_LABELS[activeTab]} by location` }}
+                startAdornment={pillIcon("location")}
+                autoWidth
+                SelectDisplayProps={{
+                  title: facet.location === ALL ? ALL_LOCATIONS : facet.location,
+                }}
+                sx={[pillSelectSx, { maxWidth: "min(300px, 100%)" }]}
+              >
+                <MenuItem value={ALL}>{ALL_LOCATIONS}</MenuItem>
+                {locations.map((location) => (
+                  <MenuItem key={location} value={location}>
+                    {location}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ) : null}
+
+          {/* A plain MUI checkbox, coloured from the on-bg family: this row sits
+              on the wallpaper, whose ink runs from near-black to near-white as
+              the page scrolls, so a palette colour (the theme's primary, or
+              --accent, which does not track the scroll) would vanish at one end
+              or the other. */}
+          {showStarPoints ? (
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={facet.starPoints}
+                  onChange={(event) => setFacet({ starPoints: event.target.checked })}
+                  sx={{
+                    color: "var(--on-bg-muted)",
+                    "&.Mui-checked": { color: "var(--on-bg)" },
+                  }}
+                />
+              }
+              label="Eligible for STAR points"
+              sx={{
+                mr: 0,
+                "& .MuiFormControlLabel-label": {
+                  fontSize: "0.9rem",
+                  fontWeight: 600,
+                  color: "var(--on-bg)",
+                },
+              }}
+            />
           ) : null}
 
           <FormControl size="small">

@@ -48,6 +48,10 @@ export function eventCards(
       // on a card (the venue is), but only an event can be sorted by date.
       category: event.category,
       startTime: event.start_time,
+      location: event.venue_name,
+      // Truthy rather than `=== 1`, the same test the details page makes: the
+      // column is a 0/1 int today but nothing in the type says it must be.
+      starPoints: Boolean(event.star_points_eligible),
       image: event.banner_image_url
         ? images.get(event.banner_image_url.toLowerCase())
         : undefined,
@@ -79,6 +83,7 @@ export function itemCards(
       note: note?.(item),
       category: item.category,
       price: item.price,
+      location: item.location_coverage ?? undefined,
       image: item.images ? images.get(item.images.toLowerCase()) : undefined,
       href: `/details/${id}`,
       bookmark: bookmark(id),

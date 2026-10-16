@@ -13,6 +13,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import BookmarkButton from "../bookmarks/BookmarkButton";
 import { ChevronDown } from "./Chevron";
+import DetailsChat from "./DetailsChat";
 import ImageGallery from "./ImageGallery";
 
 export type InfoRow = { label: string; value: string; href?: string };
@@ -252,6 +253,15 @@ export default function DetailsView({
           <InfoRows rows={provider} />
         </DetailBar>
       </Stack>
+
+      {/* Self-portalling: the launcher and panel render at <body>, so they sit
+          outside .page-shell (the colour-filtered subtree) and this element adds
+          no layout of its own. */}
+      <DetailsChat
+        recordId={recordId}
+        kind={kind}
+        signedIn={bookmark.signedIn}
+      />
     </Box>
   );
 }
