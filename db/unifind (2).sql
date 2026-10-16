@@ -1,0 +1,319 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Host: 127.0.0.1
+-- Generation Time: Oct 16, 2026 at 04:12 PM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.0.30
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Database: `unifind`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `bookmarks`
+--
+
+CREATE TABLE `bookmarks` (
+  `bookmark_id` int(11) NOT NULL,
+  `user_email` varchar(100) NOT NULL,
+  `event_id` int(11) DEFAULT NULL,
+  `item_id` int(11) DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp()
+) ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `events`
+--
+
+CREATE TABLE `events` (
+  `event_id` int(11) NOT NULL,
+  `organizer_email` varchar(100) NOT NULL,
+  `title` varchar(150) NOT NULL,
+  `description` text NOT NULL,
+  `category` varchar(50) NOT NULL,
+  `venue_name` varchar(100) NOT NULL,
+  `start_time` datetime NOT NULL,
+  `end_time` datetime NOT NULL,
+  `star_points_eligible` tinyint(1) DEFAULT 0,
+  `banner_image_url` text DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `events`
+--
+
+INSERT INTO `events` (`event_id`, `organizer_email`, `title`, `description`, `category`, `venue_name`, `start_time`, `end_time`, `star_points_eligible`, `banner_image_url`, `created_at`) VALUES
+(1, 'josa_organizer@live.iium.edu.my', 'Jom Main Tradisi (Jauhar Week 2026)', 'Experience traditional games at Jauhar Week 2026! Organized by IIUM Johor Students Association (IIUM JOSA) in collaboration with Yayasan Pelajaran Johor & Maju Johor. Refreshments and Star Points provided for all participants.', 'Cultural & Sports', 'Mahallah Ali Field, IIUM Gombak', '2026-10-18 08:30:00', '2026-10-18 13:00:00', 1, 'https://example.com/banners/jom_main_tradisi.jpg', '2026-10-16 11:22:08'),
+(2, 'pembina_organizer@live.iium.edu.my', 'Kickstart Your Campus Life: Smart Brain, Strong Soul', 'Join us for an inspiring session featuring Ammar bin Badrulhisham (Best Student Award Co-Curricular, Kulliyyah of Engineering) and Nur Irdina Hakimah binti NorAzali (PhD Candidate in Usul at-Din and Comparative Religion and Philosophy). Organized by Pembina IIUM Chapter (@pembina.uiam).', 'Academic & Talk', 'Experimental Hall, IIUM Gombak', '2026-10-18 20:00:00', '2026-10-18 22:30:00', 1, 'https://example.com/banners/kickstart_campus_life_clean.jpg', '2026-10-16 11:23:39'),
+(3, 'titianasli_organizer@live.iium.edu.my', 'Tee Me Up! T-Shirt Design Competition', 'DON\'T JUST WEAR IT. DESIGN IT. OWN IT! Tee Me Up! is your canvas to show your creativity. Theme: Health & Wellbeing (Ocean / Dreamy). Prizes: 1st Place (RM120 Cash + T-Shirt), 2nd Place (RM80 Cash), 3rd Place (RM50 Cash). Star points & E-Certificate provided! Organized by Titian Asli Club in collaboration with CENSERVE and IIUM.', 'Arts & Competition', 'Online Submission / IIUM Gombak', '2026-10-18 09:00:00', '2026-10-31 23:59:00', 1, 'https://example.com/banners/tee_me_up_competition.jpg', '2026-10-16 14:23:40'),
+(4, 'odrsdce_organizer@live.iium.edu.my', 'Program Mahasiswa Negara Siri 6/2026', 'Invitation to all First-Year and Second-Year students for the 2025/2026 academic session at IIUM Gombak campus. The main objective of this programme is to foster a spirit of patriotism and strengthen national identity through nation-building activities. Organized by the Office of the Deputy Rector (Student Development & Community Engagement) - ODRSDCE. Contact: Br. Ahmad \'Izzuddin Yunus (03-6421 5997 / ahmadizzuddin@iium.edu.my).', 'Leadership & Development', 'PLK Ulu Sepri, Negeri Sembilan', '2026-10-18 08:00:00', '2026-10-20 17:00:00', 1, 'https://example.com/banners/mahasiswa_negara_siri6.jpg', '2026-10-16 14:26:46'),
+(5, 'byic_organizer@live.iium.edu.my', 'BYIC FESTIVAL 2026: Opening Ceremony & Young Investor Empowerment Forum', 'BYIC FESTIVAL 2026 Opening Ceremony officiated by Pn. Mazliana (Director of Social Impact & Investor Empowerment, Bursa Malaysia), followed by the Young Investor Empowerment Forum: \"Buy Now, Pay Later, Invest Later?\". Panelists: Mdm. Noorsuriani Muhamed (Acting Director, Islamic Capital Market Bursa Malaysia), Mr. Khairi Shahrin Arief (CEO, CGS International Securities Malaysia), Br. Eyzzul Helmi (Grand Champion, ASEAN Investment Challenge 2025). Moderator: Dr. Fatimah Noor Rashidah (Assistant Professor, Department of Finance IIUM Gombak). Star points & excuse letter provided. Powered by Bursa Malaysia & Bursa Young Investor Club.', 'Forum & Finance', 'Main Auditorium, KOE, IIUM Gombak', '2026-10-29 09:00:00', '2026-10-29 13:00:00', 1, 'https://example.com/banners/byic_opening_ceremony.jpg', '2026-10-16 14:31:46'),
+(6, 'byic_malamgalau@live.iium.edu.my', 'BYIC FESTIVAL 2026: Malam Galau (Closing Ceremony)', 'Ready to sing your heart out and vibe with the best beats? Join us for Malam Galau, the grand closing ceremony highlight of BYIC Festival 2026! Featuring Special Guest Artist Aziz Harun (Singer and Song Writer) and Opening Act IIUM Citra Band. Organized by Bursa Young Investor Club (BYIC 25/26) and Powered by Bursa Malaysia.', 'Entertainment & Concert', 'MPH KICT, IIUM Gombak', '2026-11-01 20:00:00', '2026-11-01 23:00:00', 0, 'https://example.com/banners/malam_galau_closing.jpg', '2026-10-16 14:37:17'),
+(7, 'integrity_organizer@live.iium.edu.my', 'IIUM Integrity Week 2026: The Ethical Lens', 'Empowering Integrity, Zero Tolerance Toward Corruption. Panelists: Timbalan Pesuruhjaya Mohd Azwan bin Ramli (Director of MACC Selangor), Assoc. Prof. Dr. Syaza Farhana Binti Mohamad Shukri (Associate Professor in Political Science at IIUM), Firdaus Husni (Director of Human Rights Strategist at MCCHR), Dr. Amir Mat Angsar (Retired Sergeant of PDRM). Star points and CTD provided.', 'Academic & Forum', 'Wadi Budi, IIUM Gombak', '2026-10-14 08:00:00', '2026-10-14 16:00:00', 1, 'https://example.com/banners/iium_ethical_lens.jpg', '2026-10-16 14:40:51'),
+(8, 'iheal_organizer@live.iium.edu.my', 'i-HEAL 2026: Comic Competition', 'Create for Mental Health: A story can change a perspective. Theme: Unfolding The Self. Prizes: 1st Place (RM200), 2nd Place (RM100), 3rd Place (RM80), Consolation Prize (RM60). Organized as an official competition of i-HEAL IIUM National Counselling Month by ODRSDCE, IIUM Counselling and Career Services Centre (CCSC), and PEERS IIUM in collaboration with FLIC, Dar al-Hikmah Library, PKD, and KPJ Healthcare.', 'Arts & Competition', 'Online Submission / IIUM Gombak', '2026-10-12 00:00:00', '2026-10-19 23:59:00', 1, 'https://example.com/banners/i_heal_comic_competition.jpg', '2026-10-16 14:44:46'),
+(9, 'iheal_poetry@live.iium.edu.my', 'i-HEAL 2026: Poetry Competition', 'Create for Mental Health: Write it. Feel it. Share it. Theme: Unfolding The Self. Prizes: 1st Place (RM200), 2nd Place (RM100), 3rd Place (RM80), Consolation Prize (RM60). Organized as an official competition of i-HEAL IIUM National Counselling Month by ODRSDCE, IIUM Counselling and Career Services Centre (CCSC), and PEERS IIUM in collaboration with FLIC, Dar al-Hikmah Library, PKD, and KPJ Healthcare.', 'Arts & Competition', 'Online Submission / IIUM Gombak', '2026-10-12 00:00:00', '2026-10-19 23:59:00', 1, 'https://example.com/banners/i_heal_poetry_competition.jpg', '2026-10-16 14:49:48'),
+(10, 'harum_serantau@live.iium.edu.my', 'Open Water Diving Course 2026', 'Join our 4 Days 3 Nights Open Water Diving Course in collaboration with Harum Serantau Biyad Centre & SDI. Receive SDI Open-Water Diver Certificate upon completion. What is included: 6 Dives, Fullboard Meals, Equipment Rental, Instructor Fees, Boat Transfer, and Triple/Quad Sharing Room. Excludes Marine Park & Jetty fees (RM10). Fee: RM1450/person (RM200 deposit). Limited to 15 PAX.', 'Sports & Outdoor', 'Perhentian Island, Malaysia', '2026-09-24 00:00:00', '2026-09-27 23:59:00', 1, 'https://example.com/banners/open_water_diving_2026.jpg', '2026-10-16 21:48:29'),
+(11, 'cuepacscare@live.iium.edu.my', 'Taklimat & Kaunter myCUEPACSCare IIUM Kuantan', 'Program Taklimat & Opening Kaunter myCUEPACSCare dengan harga istimewa untuk Kakitangan Universiti Awam Malaysia. Sesi Taklimat: 9.00 pagi - 11.00 pagi. Masa Kaunter: 11.00 pagi - 4.00 petang. Sila bawa bersama salinan MyKad & Slip Gaji terkini untuk pendaftaran. Pakej Perlindungan termasuk CUEPACSCare (Pelan Individu RM32/bln, Pelan Keluarga RM85/bln) dan CUEPACSPA (Pelan A RM6/bln, Pelan B RM12/bln).', 'Briefing & Expo', 'Banquet Hall, OCD, IIUM Kuantan', '2026-09-11 09:00:00', '2026-09-11 16:00:00', 0, 'https://example.com/banners/mycuepacscare_taklimat_2026.jpg', '2026-10-16 21:50:21'),
+(12, 'masjidshas_kuantan@live.iium.edu.my', 'Run For Faith 5KM Run 2026', 'Join the Run For Faith 5KM Run organized by Masjid SHAS, IIUM Kuantan. Schedule: 6:45 AM Briefing & Warm Up, 7:30 AM Flag Off. Packages: Package A (RM45 - T-shirt, Race Bib, Finisher Medal), Package B (RM35 - T-shirt & Race Bib). Includes refreshments and lucky draw. Top 3 prizes for IIUM Student (Male & Female) and Open (Male & Female) categories. Contact: 011-5804 1449 (Masjid SHAS) / 013-694 2205 (Br Amir).', 'Sports & Fitness', 'Masjid SHAS, IIUM Kuantan', '2026-10-03 06:45:00', '2026-10-03 11:00:00', 1, 'https://example.com/banners/run_for_faith_5km_2026.jpg', '2026-10-16 21:52:43');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `event_rsvps`
+--
+
+CREATE TABLE `event_rsvps` (
+  `rsvp_id` int(11) NOT NULL,
+  `event_id` int(11) NOT NULL,
+  `user_email` varchar(100) NOT NULL,
+  `registered_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `items`
+--
+
+CREATE TABLE `items` (
+  `item_id` int(11) NOT NULL,
+  `provider_email` varchar(100) NOT NULL,
+  `title` varchar(150) NOT NULL,
+  `description` text NOT NULL,
+  `item_type` varchar(10) NOT NULL CHECK (`item_type` in ('rent','service')),
+  `category` varchar(50) NOT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `price_unit` varchar(20) DEFAULT 'flat_rate',
+  `location_coverage` varchar(100) DEFAULT NULL,
+  `images` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`images`)),
+  `is_available` tinyint(1) DEFAULT 1,
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `items`
+--
+
+INSERT INTO `items` (`item_id`, `provider_email`, `title`, `description`, `item_type`, `category`, `price`, `price_unit`, `location_coverage`, `images`, `is_available`, `created_at`) VALUES
+(1, 'picnic_provider@live.iium.edu.my', 'Large Brown Checked Picnic Mat', 'Foldable and portable picnic mat with carry handle. Size: 200 x 200 cm. Ideal for campus picnics, outdoor gatherings, and recreational events.', 'rent', 'Outdoor & Recreation', 7.00, 'per_day', 'IIUM Kuantan Campus', '[\"https://example.com/items/picnic_mat_200x200.jpg\"]', 1, '2026-10-16 15:57:25'),
+(2, 'music_rentals@live.iium.edu.my', 'Portable 88-Key Keyboard Piano', '88 full-size keys with touch and velocity sensitivity, built-in stereo speakers, built-in sustain function, and multiple sounds/learning modes. Lightweight and portable design. Includes carry bag and power adapter.', 'rent', 'Music & Electronics', 45.00, 'per_day', 'IIUM Gombak Campus', '[\"https://example.com/items/keyboard_piano.jpg\"]', 1, '2026-10-16 15:58:57'),
+(3, 'anytime_rentals@live.iium.edu.my', 'Anytime Fitness Keyfob Rental Service', 'Rent a keyfob for full 24/7 access to Anytime Fitness facilities. Safe, quick entry, perfect for students, travellers, or short-term members. DM to check availability and rental details.', 'rent', 'Sports & Health', 15.00, 'per_day', 'IIUM Gombak & Nearby Branches', '[\"https://example.com/items/anytime_keyfob.jpg\"]', 1, '2026-10-16 16:01:57'),
+(4, 'car_rentals@live.iium.edu.my', 'Perodua Axia (Dark Grey / Granite Grey)', 'Compact 5-seater hatchback available for daily or weekend rental around IIUM Gombak campus. Clean condition, cold AC, and fuel efficient. Perfect for short road trips and daily errands.', 'rent', 'Vehicles & Transport', 80.00, 'per_day', 'IIUM Gombak Campus', '[\"https://example.com/items/perodua_axia_grey.jpg\"]', 1, '2026-10-16 16:09:35'),
+(5, 'sports_rentals@live.iium.edu.my', 'Nike Tiempo Football / Futsal Boots', 'White and grey Nike Tiempo leather football boots with original tag intact. Excellent grip, lightweight, and durable leather upper. Great for campus matches and football practice.', 'rent', 'Sports & Health', 10.00, 'per_day', 'IIUM Kuantan Campus', '[\"https://example.com/items/nike_tiempo_boots.jpg\"]', 1, '2026-10-16 16:12:40'),
+(6, 'gaming_rentals@live.iium.edu.my', 'Nintendo Switch V1 Console Set', 'Package includes Nintendo Switch v1 console, 1 pair Joy-Con Controllers, TV Dock, HDMI Cable, and original charger. Includes games (It Takes Two, Super Mario Party, Nintendo Switch Sports, Overcooked 2, and more). Add-on extra Joy-Cons available for RM25.', 'rent', 'Gaming & Gadgets', 50.00, 'per_day', 'IIUM Gombak Campus', '[\"https://example.com/items/nintendo_switch_v1.jpg\"]', 1, '2026-10-16 16:14:06'),
+(7, 'tech_rentals@live.iium.edu.my', 'Mechanical Keyboard with Rotary Knob (White/Pink/Grey)', '75% compact mechanical keyboard featuring custom white, pink, and grey keycaps, rotary volume knob, and tactile switches. Ideal for comfortable typing, study assignments, and gaming sessions.', 'rent', 'Gaming & Gadgets', 8.00, 'per_day', 'IIUM Pagoh Campus', '[\"https://example.com/items/mechanical_keyboard.jpg\"]', 1, '2026-10-16 16:15:58'),
+(8, 'motor_rentals@live.iium.edu.my', 'Modenas Kriss 110 Motorcycle (Green)', 'Fuel-efficient Modenas Kriss 110 moped (Plate: VBT 4306) available for daily campus commute and short trips around Gombak. Includes helmet and lock.', 'rent', 'Vehicles & Transport', 25.00, 'per_day', 'IIUM Pagoh Campus', '[\"https://example.com/items/modenas_kriss_green.jpg\"]', 1, '2026-10-16 16:23:04'),
+(9, 'motor_rentals@live.iium.edu.my', 'Slim White Electric Tower Fan', 'Space-saving vertical tower fan in clean white finish. Features quiet operation, multiple speed settings, and wide oscillation to keep your room or study space cool. Perfect for Mahallah rooms.', 'rent', 'Home Appliances', 5.00, 'per_day', 'IIUM Pagoh Campus', '[\"https://example.com/items/white_tower_fan.jpg\"]', 1, '2026-10-16 16:24:44'),
+(10, 'photo_studio@live.iium.edu.my', 'Professional Campus Photography Service', 'High-quality photography services for IIUM club programmes, convocation portraits, outdoor photoshoots, and formal campus events. Fully edited high-resolution photos provided via Cloud link.', 'service', 'Media & Events', 50.00, 'per_hour', 'IIUM Kuantan Campus', '[\"https://example.com/items/photography_service.jpg\"]', 1, '2026-10-16 20:01:01'),
+(11, 'photo_studio@live.iium.edu.my', 'Professional Video Editing Services', 'Cinematic video editing for promotional videos, event highlights, and documentaries. Turning your vision into reality with smooth storytelling and captivating visuals.', 'service', 'Media & Events', 40.00, 'per_item', 'IIUM Kuantan Campus', '[\"https://example.com/items/video_editing_service.jpg\"]', 1, '2026-10-16 20:03:26'),
+(12, 'vehicles@live.iium.edu.my', 'Afternoon Campus Carpool Service', 'Reliable afternoon carpool rides for IIUM students and staff. Daily routes covering campus Mahallahs, local transit hubs (LRT Gombak), and nearby residential areas.', 'service', 'Transport', 5.00, 'per_trip', 'IIUM Gombak & Surrounding Area', '[\"https://example.com/items/afternoon_carpool.jpg\"]', 1, '2026-10-16 20:06:39'),
+(13, 'vehicles@live.iium.edu.my', 'Express Campus Runner & Delivery Service', 'Fast on-demand delivery for food, parcels from campus mail hubs, groceries, and urgent errands straight to your Mahallah block.', 'service', 'Runner', 4.00, 'per_trip', 'IIUM Gombak Campus', '[\"https://example.com/items/runner_delivery.jpg\"]', 1, '2026-10-16 20:07:54'),
+(14, 'gadget_fix@live.iium.edu.my', '24 Hours Gadget & Device Repair Service', 'Professional assistance in fixing damaged or malfunctioning items including smartphones, tablets, and laptops. Repairs of varying complexity available with 24-hour turnaround support.', 'service', 'Gadget Repair', 30.00, 'per_item', 'Mahallah Zaid Bin Harithah, IIUM Pagoh', '[\"https://example.com/items/gadget_repair_service.jpg\"]', 1, '2026-10-16 20:11:07'),
+(15, 'soofun_print@live.iium.edu.my', 'Printing Service Sister (SooFun)', 'A4 printing services for students. B&W: RM0.20 (single) / RM0.30 (double-sided). Colour: RM0.50 (single) / RM0.70 (double-sided). Free pickup at Mahallah Asiah (Block F / MO) or COD delivery starting from RM2.00 depending on Mahallah.', 'service', 'Printing & Design', 0.20, 'per_item', 'Mahallah Asiah & COD Campus, IIUM Gombak', '[\"https://example.com/items/printing_service_sister.jpg\"]', 1, '2026-10-16 20:12:39'),
+(16, 'jey_barber@live.iium.edu.my', 'Jey Barber - Grooming & Haircut Services', 'On-campus haircut and grooming services. Menu: Full Haircut (RM10), Cut + Beard Trim (RM13), Hairline/Edge-Up (RM5), Beard & Mustache (RM4), Serum Styling (RM2), After-Hours/Custom Slot (RM15). Location: Room 2.4, Block D, Mahallah Salahuddin. Operating Hours: Daily 8:00 PM - 11:00 PM. Payment: Cash & DuitNow QR.', 'service', 'Barber & Grooming', 10.00, 'per_item', 'Room 2.4, Blok D, Mahallah Salahuddin, IIUM Gombak', '[\"https://example.com/items/jey_barber_service.jpg\"]', 1, '2026-10-16 20:15:03'),
+(17, 'peer_tutor@live.iium.edu.my', 'Peer Tutoring Service (Multi-Subject)', 'Comprehensive peer tutoring service for university students. Ready to teach Discrete Structure, Database Programming, or almost any subject required. One-on-one sessions or small group revisions available.', 'service', 'Tutoring', 25.00, 'per_hour', 'Dar al-Hikmah Library, IIUM Gombak/Online', '[\"https://example.com/items/tutoring_service.jpg\"]', 1, '2026-10-16 20:17:41'),
+(18, 'express_ironing@live.iium.edu.my', 'Express Mahallah Ironing Service', 'Professional steam ironing and pressing services for formal wear, baju kurung, shirts, and trousers. Quick turnaround time with Mahallah pick-up and drop-off options available.', 'service', 'Laundry', 2.50, 'per_item', 'Mahallah Maimunah, IIUM Kuantan', '[\"https://example.com/items/ironing_service.jpg\"]', 1, '2026-10-16 20:21:22');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `reviews`
+--
+
+CREATE TABLE `reviews` (
+  `review_id` int(11) NOT NULL,
+  `item_id` int(11) NOT NULL,
+  `reviewer_email` varchar(100) NOT NULL,
+  `rating` int(11) DEFAULT NULL CHECK (`rating` >= 1 and `rating` <= 5),
+  `comment` text DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `users`
+--
+
+CREATE TABLE `users` (
+  `email` varchar(100) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `phone_number` varchar(20) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`email`, `password_hash`, `phone_number`, `created_at`) VALUES
+('anytime_rentals@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60123456789', '2026-10-16 08:00:21'),
+('byic_malamgalau@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60123456784', '2026-10-16 06:36:47'),
+('byic_organizer@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60123456783', '2026-10-16 06:31:33'),
+('car_rentals@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60123456780', '2026-10-16 08:09:23'),
+('cuepacscare@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60322736268', '2026-10-16 13:49:57'),
+('express_ironing@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60123456793', '2026-10-16 12:20:07'),
+('gadget_fix@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60123456789', '2026-10-16 12:10:49'),
+('gaming_rentals@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+601161680750', '2026-10-16 08:13:45'),
+('harum_serantau@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60116513060', '2026-10-16 13:43:51'),
+('iheal_organizer@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60123456786', '2026-10-16 06:44:03'),
+('iheal_poetry@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60123456787', '2026-10-16 06:49:28'),
+('integrity_organizer@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60123456785', '2026-10-16 06:39:42'),
+('jey_barber@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60123456791', '2026-10-16 12:14:45'),
+('josa_organizer@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60123456780', '2026-10-16 03:21:26'),
+('masjidshas_kuantan@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+601158041449', '2026-10-16 13:52:15'),
+('motor_rentals@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60123456783', '2026-10-16 08:19:48'),
+('music_rentals@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+601120729732', '2026-10-16 07:58:41'),
+('odrsdce_organizer@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60364215997', '2026-10-16 06:26:29'),
+('peer_tutor@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60123456792', '2026-10-16 12:16:01'),
+('pembina_organizer@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60123456781', '2026-10-16 03:23:18'),
+('photo_studio@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60123456785', '2026-10-16 12:00:40'),
+('picnic_provider@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60123456788', '2026-10-16 07:52:23'),
+('soofun_print@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60123456790', '2026-10-16 12:12:19'),
+('sports_rentals@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60123456781', '2026-10-16 08:12:21'),
+('tech_rentals@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60123456782', '2026-10-16 08:15:42'),
+('titianasli_organizer@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60123456782', '2026-10-16 06:23:20'),
+('vehicles@live.iium.edu.my', '$2b$12$eImiTXuWVxfM37uY4JANjOQe3u8.e1/N.7b/3.2/..', '+60123456787', '2026-10-16 12:05:30');
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `bookmarks`
+--
+ALTER TABLE `bookmarks`
+  ADD PRIMARY KEY (`bookmark_id`),
+  ADD KEY `user_email` (`user_email`),
+  ADD KEY `event_id` (`event_id`),
+  ADD KEY `item_id` (`item_id`);
+
+--
+-- Indexes for table `events`
+--
+ALTER TABLE `events`
+  ADD PRIMARY KEY (`event_id`),
+  ADD KEY `organizer_email` (`organizer_email`);
+
+--
+-- Indexes for table `event_rsvps`
+--
+ALTER TABLE `event_rsvps`
+  ADD PRIMARY KEY (`rsvp_id`),
+  ADD UNIQUE KEY `event_id` (`event_id`,`user_email`),
+  ADD KEY `user_email` (`user_email`);
+
+--
+-- Indexes for table `items`
+--
+ALTER TABLE `items`
+  ADD PRIMARY KEY (`item_id`),
+  ADD KEY `provider_email` (`provider_email`);
+
+--
+-- Indexes for table `reviews`
+--
+ALTER TABLE `reviews`
+  ADD PRIMARY KEY (`review_id`),
+  ADD KEY `item_id` (`item_id`),
+  ADD KEY `reviewer_email` (`reviewer_email`);
+
+--
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`email`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `bookmarks`
+--
+ALTER TABLE `bookmarks`
+  MODIFY `bookmark_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `events`
+--
+ALTER TABLE `events`
+  MODIFY `event_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+
+--
+-- AUTO_INCREMENT for table `event_rsvps`
+--
+ALTER TABLE `event_rsvps`
+  MODIFY `rsvp_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `items`
+--
+ALTER TABLE `items`
+  MODIFY `item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+
+--
+-- AUTO_INCREMENT for table `reviews`
+--
+ALTER TABLE `reviews`
+  MODIFY `review_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `bookmarks`
+--
+ALTER TABLE `bookmarks`
+  ADD CONSTRAINT `bookmarks_ibfk_1` FOREIGN KEY (`user_email`) REFERENCES `users` (`email`) ON DELETE CASCADE,
+  ADD CONSTRAINT `bookmarks_ibfk_2` FOREIGN KEY (`event_id`) REFERENCES `events` (`event_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `bookmarks_ibfk_3` FOREIGN KEY (`item_id`) REFERENCES `items` (`item_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `events`
+--
+ALTER TABLE `events`
+  ADD CONSTRAINT `events_ibfk_1` FOREIGN KEY (`organizer_email`) REFERENCES `users` (`email`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `event_rsvps`
+--
+ALTER TABLE `event_rsvps`
+  ADD CONSTRAINT `event_rsvps_ibfk_1` FOREIGN KEY (`event_id`) REFERENCES `events` (`event_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `event_rsvps_ibfk_2` FOREIGN KEY (`user_email`) REFERENCES `users` (`email`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `items`
+--
+ALTER TABLE `items`
+  ADD CONSTRAINT `items_ibfk_1` FOREIGN KEY (`provider_email`) REFERENCES `users` (`email`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `reviews`
+--
+ALTER TABLE `reviews`
+  ADD CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `items` (`item_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`reviewer_email`) REFERENCES `users` (`email`) ON DELETE CASCADE;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

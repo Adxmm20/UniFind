@@ -1,6 +1,17 @@
 :root {
   --background: #D8F3DC;
   --foreground: #081C15;
+
+  /* Scroll-linked wallpaper (see app/components/ScrollWallpaper.tsx):
+     --scroll-progress is 0 at the top of the page and 1 at the bottom. */
+  --scroll-progress: 0;
+
+  /* Foregrounds for the text/UI that sits directly on the wallpaper. Kept in
+     sync with --scroll-progress by ScrollWallpaper.tsx so it stays readable as
+     the wallpaper darkens. */
+  --on-bg: #081c15;
+  --on-bg-muted: rgba(8, 28, 21, 0.62);
+  --on-bg-line: rgba(8, 28, 21, 0.18);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -16,9 +27,47 @@ body {
   margin: 0;
 }
 
-/* Slideshow sizing scales with the viewport; the ring radius is derived from
-   --slide-w in the component so panels never overlap. */
+/* Fixed backdrop shared by every route: a soft green gradient that dims toward
+   deep forest green as the page is scrolled. Sits behind all content. */
+.scroll-wallpaper {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.scroll-wallpaper__gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #eaf7ec 0%, #d8f3dc 55%, #b7e4c7 100%);
+}
+
+.scroll-wallpaper__dim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #0d2a20 0%, #081c15 100%);
+  opacity: var(--scroll-progress);
+  will-change: opacity;
+}
+
+/* Slideshow sizing scales with the viewport. --slide-w is the active panel's
+   width — the frame at the centre of the carousel — and the neighbours are
+   placed and tilted relative to it in Slideshow.tsx, so these two numbers are
+   the only ones that need tuning. The 0.6 ratio is the frame's aspect (5:3).
+
+   The 860px ceiling is not arbitrary, it is bounded from both sides because the
+   neighbours are sized off --slide-w:
+     - lower bound: their outer edges have to still run off the screen edges. A
+       42vw frame clears the edge at every viewport up to ~2160px; the ceiling
+       starts binding at ~2048px, so past that the bleed shrinks and eventually
+       stops. Lowering the ceiling to the old 620 lost the bleed from ~1480px on,
+       which showed up as a dead gap either side of the carousel on a 1920 screen.
+     - upper bound: the neighbour that leans towards the middle is magnified by
+       the perspective, and past --slide-w ~995 that magnified inner edge is
+       taller than the stage and gets clipped. 860 leaves ~5px of margin.
+   Everything above is derived in the `bounds` scratch calculation, not guessed. */
 .slideshow-glass {
-  --slide-w: clamp(150px, 42vw, 300px);
-  --slide-h: calc(var(--slide-w) * 0.654);
+  --slide-w: clamp(200px, 42vw, 860px);
+  --slide-h: calc(var(--slide-w) * 0.6);
 }

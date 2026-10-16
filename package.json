@@ -6,7 +6,11 @@
     "dev": "next dev -p 3000 -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:seed": "node scripts/seed-db.mjs",
+    "db:reset": "node scripts/seed-db.mjs --force",
+    "predev": "node scripts/seed-db.mjs",
+    "prebuild": "node scripts/seed-db.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -18,7 +22,7 @@
     "react-dom": "19.3.0"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@types/node": "^24.19.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

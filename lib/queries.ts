@@ -1,0 +1,162 @@
+import { getDb } from "./db";
+
+export type UserRow = {
+  email: string;
+  password_hash: string;
+  phone_number: string | null;
+  created_at: string;
+};
+
+export type EventRow = {
+  event_id: number;
+  organizer_email: string;
+  title: string;
+  description: string;
+  category: string;
+  venue_name: string;
+  start_time: string;
+  end_time: string;
+  star_points_eligible: number;
+  banner_image_url: string | null;
+  created_at: string;
+};
+
+export type ItemRow = {
+  item_id: number;
+  provider_email: string;
+  title: string;
+  description: string;
+  item_type: "rent" | "service";
+  category: string;
+  price: number;
+  price_unit: string | null;
+  location_coverage: string | null;
+  images: string | null;
+  is_available: number;
+  created_at: string;
+};
+
+export type ReviewRow = {
+  review_id: number;
+  item_id: number;
+  reviewer_email: string;
+  rating: number | null;
+  comment: string | null;
+  created_at: string;
+};
+
+export type BookmarkRow = {
+  bookmark_id: number;
+  user_email: string;
+  event_id: number | null;
+  item_id: number | null;
+  created_at: string;
+};
+
+export type RsvpRow = {
+  rsvp_id: number;
+  event_id: number;
+  user_email: string;
+  registered_at: string;
+};
+
+function all<T>(sql: string, ...params: (string | number)[]): T[] {
+  return getDb().prepare(sql).all(...params) as unknown as T[];
+}
+
+function one<T>(sql: string, ...params: (string | number)[]): T | undefined {
+  return getDb().prepare(sql).get(...params) as unknown as T | undefined;
+}
+
+// ---- events ----------------------------------------------------------------
+
+export function getEvents(): EventRow[] {
+  return all<EventRow>("SELECT * FROM events ORDER BY start_time, event_id");
+}
+
+export function getEventsByOrganizer(email: string): EventRow[] {
+  return all<EventRow>(
+    "SELECT * FROM events WHERE organizer_email = ? ORDER BY start_time, event_id",
+    email,
+  );
+}
+
+// ---- items -----------------------------------------------------------------
+
+export function getRentals(): ItemRow[] {
+  return all<ItemRow>(
+    "SELECT * FROM items WHERE item_type = 'rent' ORDER BY item_id",
+  );
+}
+
+// Every listing, rentals and services alike. The home page tabs only want
+// rentals (getRentals), but the Details route prerenders all record ids.
+export function getItems(): ItemRow[] {
+  return all<ItemRow>("SELECT * FROM items ORDER BY item_id");
+}
+
+export function getItemsByProvider(email: string): ItemRow[] {
+  return all<ItemRow>(
+    "SELECT * FROM items WHERE provider_email = ? ORDER BY item_id",
+    email,
+  );
+}
+
+// ---- users -----------------------------------------------------------------
+
+const USERNAME_SQL = "substr(email, 1, instr(email, '@') - 1)";
+
+export function getAllUsernames(): string[] {
+  return all<{ username: string }>(
+    `SELECT ${USERNAME_SQL} AS username FROM users ORDER BY username`,
+  ).map((row) => row.username);
+}
+
+export function getUserByUsername(username: string): UserRow | undefined {
+  return one<UserRow>(
+    `SELECT * FROM users WHERE ${USERNAME_SQL} = ? COLLATE NOCASE LIMIT 1`,
+    username,
+  );
+}
+
+export function getUserByEmail(email: string): UserRow | undefined {
+  return one<UserRow>("SELECT * FROM users WHERE email = ? LIMIT 1", email);
+}
+
+// ---- reviews ---------------------------------------------------------------
+
+export type ProviderReview = ReviewRow & { item_title: string };
+
+export function getReviewsForProvider(email: string): ProviderReview[] {
+  return all<ProviderReview>(
+    `SELECT r.*, i.title AS item_title
+       FROM reviews r
+       JOIN items i ON i.item_id = r.item_id
+      WHERE i.provider_email = ?
+      ORDER BY r.created_at DESC`,
+    email,
+  );
+}
+
+export function getReviewsForItem(itemId: number): ReviewRow[] {
+  return all<ReviewRow>(
+    "SELECT * FROM reviews WHERE item_id = ? ORDER BY created_at DESC",
+    itemId,
+  );
+}
+
+// ---- bookmarks / rsvps -----------------------------------------------------
+
+export function getBookmarksForUser(email: string): BookmarkRow[] {
+  return all<BookmarkRow>(
+    "SELECT * FROM bookmarks WHERE user_email = ? ORDER BY created_at DESC",
+    email,
+  );
+}
+
+export function getRsvpsForUser(email: string): RsvpRow[] {
+  return all<RsvpRow>(
+    "SELECT * FROM event_rsvps WHERE user_email = ? ORDER BY registered_at DESC",
+    email,
+  );
+}
