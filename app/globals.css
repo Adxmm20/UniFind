@@ -1,15 +1,6 @@
-@import "tailwindcss";
-
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --background: #D8F3DC;
+  --foreground: #081C15;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,5 +13,12 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+}
+
+/* Slideshow sizing scales with the viewport; the ring radius is derived from
+   --slide-w in the component so panels never overlap. */
+.slideshow-glass {
+  --slide-w: clamp(150px, 42vw, 300px);
+  --slide-h: calc(var(--slide-w) * 0.654);
 }
