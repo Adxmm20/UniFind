@@ -1,4 +1,5 @@
 import { getDb } from "./db";
+import { imageIds } from "./imageId";
 
 export type UserRow = {
   user_id: number;
@@ -133,6 +134,29 @@ export function getItemsByProvider(email: string): ItemRow[] {
 // its item_type.
 export function getItemById(itemId: number): ItemRow | undefined {
   return one<ItemRow>("SELECT * FROM items WHERE item_id = ?", itemId);
+}
+
+// ---- pictures --------------------------------------------------------------
+
+// Every stored picture id mapped to the record that carries it ("E101" ->
+// "event-1", "S1001" -> "item-10"). It exists so a caller holding a picture id
+// — the slideshow's trending files, which may be named after either — can still
+// find the record it belongs to. A picture id is unique across the catalogue by
+// construction (lib/imageId.ts), so no row can overwrite another's entry, and
+// lowercasing both sides makes a hand-typed file name resolve too.
+export function pictureOwnerIndex(): Map<string, string> {
+  const index = new Map<string, string>();
+  for (const event of getEvents()) {
+    for (const id of imageIds(event.images)) {
+      index.set(id.toLowerCase(), `event-${event.event_id}`);
+    }
+  }
+  for (const item of getItems()) {
+    for (const id of imageIds(item.images)) {
+      index.set(id.toLowerCase(), `item-${item.item_id}`);
+    }
+  }
+  return index;
 }
 
 // ---- search ----------------------------------------------------------------

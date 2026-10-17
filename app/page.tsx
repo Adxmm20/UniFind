@@ -14,29 +14,49 @@ import {
   getItemById,
   getRentals,
   getServices,
+  pictureOwnerIndex,
 } from "@/lib/queries";
 import { parseRecordId } from "@/lib/recordId";
 
-// Slides come from public/img/trending/, whose base names are record ids, so
-// each slide can link straight to its details page.
+// Slides come from public/img/trending/, whose base names are normally record
+// ids (`event-1`, `item-4`), so each slide can link straight to its details
+// page. A base name that is a *picture* id instead (`S1001`) is resolved to the
+// record that carries it through pictureOwnerIndex(), so a slide may be named
+// after the picture as well.
 //
 // A slide is also dropped when its record is gone: records can be deleted from
 // their details page now, and a trending picture is a copy that the delete
 // deliberately leaves on disk (nothing removes files). Without this check the
-// slideshow would keep offering a link that 404s.
+// slideshow would keep offering a link that 404s. When two files resolve to one
+// record the later one is skipped — a slide links to the record, not the file,
+// so a duplicate would only be a second link to the same page.
 function getSlides(): Slide[] {
-  return listImages("trending")
-    .map((file) => ({ id: file.replace(IMAGE_RE, ""), file }))
-    .filter(({ id }) => {
-      const parsed = parseRecordId(id);
-      if (!parsed) return false;
-      return parsed.kind === "event"
-        ? getEventById(parsed.id) !== undefined
-        : getItemById(parsed.id) !== undefined;
-    })
-    .map(({ id, file }) => {
-      return { id, href: `/details/${id}`, src: `/img/trending/${file}` };
+  const owners = pictureOwnerIndex();
+  const seen = new Set<string>();
+  const slides: Slide[] = [];
+
+  for (const file of listImages("trending")) {
+    const stem = file.replace(IMAGE_RE, "");
+    const recordId = parseRecordId(stem)
+      ? stem
+      : owners.get(stem.toLowerCase());
+    if (!recordId || seen.has(recordId)) continue;
+
+    const parsed = parseRecordId(recordId);
+    if (!parsed) continue;
+    const exists =
+      parsed.kind === "event" ? getEventById(parsed.id) : getItemById(parsed.id);
+    if (!exists) continue;
+
+    seen.add(recordId);
+    slides.push({
+      id: recordId,
+      href: `/details/${recordId}`,
+      src: `/img/trending/${file}`,
     });
+  }
+
+  return slides;
 }
 
 export default async function Home() {
