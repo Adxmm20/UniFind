@@ -26,9 +26,12 @@ export type CardData = {
    */
   bookmark?: { signedIn: boolean; saved: boolean };
   /**
-   * The record's own category — the facet the home grid filters on. Held apart
-   * from `subtitle` even though events and items put the same value there, so a
-   * card whose second line ever says something else cannot break the filter.
+   * The facet the home grid's **category** filter groups by — the leading word
+   * of the stored category ("Academic & Forum" → "Academic"), so the options
+   * cannot duplicate each other (see `categoryOf()` in cardData.ts). It is
+   * therefore *not* necessarily what `subtitle` shows; the two are held apart
+   * for exactly that reason, and it is also why a card whose second line ever
+   * says something else cannot break the filter.
    */
   category?: string;
   /** Events only: what the home "Soonest / Latest" sorts order on. */
@@ -36,13 +39,15 @@ export type CardData = {
   /** Items only: what the home price sorts order on (the raw number). */
   price?: number;
   /**
-   * Where the record is: an event's venue, an item's location coverage. The one
-   * facet the two record kinds agree on, which is what lets the home grid's
-   * location filter read it for every tab. Note that only an event's card
-   * *shows* it — as its `meta` line, the venue — while an item's card carries its
-   * price there instead.
+   * The campus the record sits on — `IIUM Gombak` / `IIUM Kuantan` /
+   * `IIUM Pagoh` / `Others` — which is what the home grid's location filter
+   * groups by, because the record's own location string is often a full address
+   * ("Room 2.4, Blok D, Mahallah Salahuddin, IIUM Gombak") rather than
+   * something anyone filters by. See `cardData.ts` for the rule. Note that only
+   * an event's card *shows* where it is — as its `meta` line, the full venue —
+   * while an item's card carries its price there instead.
    */
-  location?: string;
+  campus?: string;
   /** Events only: whether the event counts for STAR points (see /post). */
   starPoints?: boolean;
 };

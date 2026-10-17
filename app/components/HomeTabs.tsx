@@ -28,11 +28,11 @@ const TAB_LABELS: Record<HomeTab, string> = {
   services: "Services",
 };
 
-// What the filter's "everything" row carries. It cannot collide with a real
+// What the filters' "everything" rows carry. It cannot collide with a real
 // category: those are catalogue values, never "all".
 const ALL = "all";
 
-const ALL_LOCATIONS = "All locations";
+const ALL_CAMPUSES = "All campuses";
 
 type SortKey = "default" | "latest" | "title" | "priceAsc" | "priceDesc";
 
@@ -67,7 +67,8 @@ const SORTS: Record<HomeTab, SortOption[]> = {
 
 type Facet = {
   category: string;
-  location: string;
+  /** A campus label, not the record's own location string — see cardData.ts. */
+  campus: string;
   /**
    * Events only — the tab's checkbox. Never set on the items tabs, which do not
    * render it, so the filter reads it unguarded.
@@ -77,9 +78,9 @@ type Facet = {
 };
 
 const DEFAULT_FACETS: Record<HomeTab, Facet> = {
-  events: { category: ALL, location: ALL, starPoints: false, sort: "default" },
-  rentals: { category: ALL, location: ALL, starPoints: false, sort: "default" },
-  services: { category: ALL, location: ALL, starPoints: false, sort: "default" },
+  events: { category: ALL, campus: ALL, starPoints: false, sort: "default" },
+  rentals: { category: ALL, campus: ALL, starPoints: false, sort: "default" },
+  services: { category: ALL, campus: ALL, starPoints: false, sort: "default" },
 };
 
 // Plain code-unit comparison rather than localeCompare: the facet lists are
@@ -169,13 +170,13 @@ export default function HomeTabs({
   // read from the whole tab list rather than the filtered subset, so the control
   // does not flicker away as the other two filters are used.
   const categories = useMemo(() => optionsOf(list, (card) => card.category), [list]);
-  const locations = useMemo(() => optionsOf(list, (card) => card.location), [list]);
+  const campuses = useMemo(() => optionsOf(list, (card) => card.campus), [list]);
   const showStarPoints = activeTab === "events" && list.some((card) => card.starPoints);
 
   const cards = useMemo(() => {
     const matching = list.filter((card) => {
       if (facet.category !== ALL && card.category !== facet.category) return false;
-      if (facet.location !== ALL && card.location !== facet.location) return false;
+      if (facet.campus !== ALL && card.campus !== facet.campus) return false;
       // `starPoints` is only ever set by the Events tab's checkbox, so this
       // needs no tab guard: on the items tabs it is false by construction.
       if (facet.starPoints && !card.starPoints) return false;
@@ -259,7 +260,9 @@ export default function HomeTabs({
             mb: 3,
           }}
         >
-          {/* A one-category tab (or an empty one) has nothing to filter, so the
+          {/* Grouped categories (see categoryOf() in cardData.ts), so the
+              options cannot read as near-duplicates of one another. A
+              one-category tab (or an empty one) has nothing to filter, so the
               control stays away rather than offering a choice that is not one. */}
           {categories.length > 1 ? (
             <FormControl size="small">
@@ -280,29 +283,24 @@ export default function HomeTabs({
             </FormControl>
           ) : null}
 
-          {/* Locations can be long — "Room 2.4, Blok D, Mahallah Salahuddin,
-              IIUM Gombak" is a real coverage value — so this pill is capped and
-              ellipsised (the selected text is repeated in its title) and the
-              menu drops its usual min-width pin (`autoWidth`) so an option is
-              never cut off where you actually choose it. Like the category pill,
-              it stays away when there is nothing to choose between. */}
-          {locations.length > 1 ? (
+          {/* The location filter at campus level (see cardData.ts): the options
+              are "IIUM Gombak" / "IIUM Kuantan" / "IIUM Pagoh" / "Others", so
+              the labels stay short and this pill is styled exactly like the
+              other two. Like the category pill it stays away when there is
+              nothing to choose between. */}
+          {campuses.length > 1 ? (
             <FormControl size="small">
               <Select
-                value={facet.location}
-                onChange={(event) => setFacet({ location: event.target.value })}
-                inputProps={{ "aria-label": `Filter ${TAB_LABELS[activeTab]} by location` }}
+                value={facet.campus}
+                onChange={(event) => setFacet({ campus: event.target.value })}
+                inputProps={{ "aria-label": `Filter ${TAB_LABELS[activeTab]} by campus` }}
                 startAdornment={pillIcon("location")}
-                autoWidth
-                SelectDisplayProps={{
-                  title: facet.location === ALL ? ALL_LOCATIONS : facet.location,
-                }}
-                sx={[pillSelectSx, { maxWidth: "min(300px, 100%)" }]}
+                sx={pillSelectSx}
               >
-                <MenuItem value={ALL}>{ALL_LOCATIONS}</MenuItem>
-                {locations.map((location) => (
-                  <MenuItem key={location} value={location}>
-                    {location}
+                <MenuItem value={ALL}>{ALL_CAMPUSES}</MenuItem>
+                {campuses.map((campus) => (
+                  <MenuItem key={campus} value={campus}>
+                    {campus}
                   </MenuItem>
                 ))}
               </Select>
