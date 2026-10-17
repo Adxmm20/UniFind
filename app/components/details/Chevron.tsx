@@ -1,7 +1,8 @@
 // MUI v9's AccordionSummary ships no default expand icon — there is no
 // @mui/icons-material in this app and the public/img/icon set has no chevron —
-// so both chevrons are drawn inline, the same way BookmarkButton draws its
-// glyph. Material Symbols' own `expand_more` / `chevron_right` paths.
+// so every chevron is drawn inline, the same way BookmarkButton draws its
+// glyph. Material Symbols' own `expand_more` / `chevron_left` / `chevron_right`
+// paths.
 //
 // `fill="currentColor"` lets the surrounding text colour drive them, and the
 // summary rotates its expand-icon wrapper itself when the panel opens.
@@ -16,6 +17,20 @@ export function ChevronDown({ size = 24 }: { size?: number }) {
       aria-hidden="true"
     >
       <path d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z" />
+    </svg>
+  );
+}
+
+export function ChevronLeft({ size = 24 }: { size?: number }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
     </svg>
   );
 }

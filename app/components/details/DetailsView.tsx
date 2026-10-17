@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import type { ReactNode } from "react";
 import BookmarkButton from "../bookmarks/BookmarkButton";
+import RecordActions from "../RecordActions";
 import { ChevronDown } from "./Chevron";
 import DetailsChat from "./DetailsChat";
 import ImageGallery from "./ImageGallery";
@@ -31,6 +32,13 @@ export type DetailsData = {
   details: InfoRow[];
   provider: InfoRow[];
   bookmark: { signedIn: boolean; saved: boolean };
+  /**
+   * Present only when the viewer owns the record: it adds Edit and Delete, and
+   * `afterDelete` is where deleting it should land (the owner's profile, since
+   * the page itself has nothing left to show). This is the UI half of the rule —
+   * the actions re-check the owner in SQL, so a tampered page cannot write.
+   */
+  manage?: { afterDelete: string };
 };
 
 // The bars are their own surfaces sitting on the wallpaper, so they use the
@@ -156,6 +164,7 @@ export default function DetailsView({
   details,
   provider,
   bookmark,
+  manage,
 }: DetailsData) {
   return (
     <Box
@@ -207,7 +216,26 @@ export default function DetailsView({
                 {title}
               </Typography>
             </Box>
-            <Box sx={{ ml: "auto" }}>
+            <Box
+              sx={{
+                ml: "auto",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-end",
+                flexWrap: "wrap",
+                gap: 1,
+              }}
+            >
+              {/* The owner's controls sit beside the bookmark one, not over it:
+                  neither surface has a hover here, so both are always visible —
+                  the same shape BookmarkButton uses with variant="inline". */}
+              {manage ? (
+                <RecordActions
+                  recordId={recordId}
+                  afterDelete={manage.afterDelete}
+                  variant="inline"
+                />
+              ) : null}
               <BookmarkButton
                 recordId={recordId}
                 signedIn={bookmark.signedIn}

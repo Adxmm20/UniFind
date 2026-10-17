@@ -6,14 +6,16 @@ import DetailsView, {
   type InfoRow,
 } from "@/app/components/details/DetailsView";
 import { getSessionUser } from "@/lib/auth";
-import { getBookmarkIds, parseRecordId } from "@/lib/bookmarks";
+import { getBookmarkIds } from "@/lib/bookmarks";
+import { parseRecordId } from "@/lib/recordId";
 import {
   formatDate,
   formatDateTime,
   formatEventRange,
   priceLabel,
 } from "@/lib/format";
-import { imageIndex, itemImageIndex } from "@/lib/images";
+import { imageIds } from "@/lib/imageId";
+import { imageIndex, itemImageIndex, resolveImages } from "@/lib/images";
 import {
   getEventById,
   getEvents,
@@ -24,14 +26,6 @@ import {
   type ItemRow,
 } from "@/lib/queries";
 
-// The Details route: `id` is the record id used everywhere else ("event-1" /
-// "item-1"). The page resolves the record, formats it for the view, and hands
-// DetailsView plain data.
-//
-// Prerendering the known records keeps the build happy under cacheComponents;
-// unknown ids still render on demand and hit notFound(). Items are read through
-// getItems() rather than getRentals() so a service listing's details page
-// counts as known too.
 export function generateStaticParams() {
   return [
     ...getEvents().map((event) => ({ id: `event-${event.event_id}` })),
@@ -61,7 +55,7 @@ export async function generateMetadata({
   return { title: `${record.title} · UniFind`, description };
 }
 
-type RecordView = Omit<DetailsData, "recordId" | "bookmark">;
+type RecordView = Omit<DetailsData, "recordId" | "bookmark" | "manage">;
 
 function usernameOf(email: string): string {
   return email.split("@")[0];
@@ -86,16 +80,14 @@ function providerRows(email: string): InfoRow[] {
 }
 
 function eventView(event: EventRow): RecordView {
-  const images = imageIndex("Events");
-  const image = event.banner_image_url
-    ? images.get(event.banner_image_url.toLowerCase())
-    : undefined;
-
   return {
     kind: "Event",
     title: event.title,
     description: event.description,
-    images: image ? [image] : [],
+    // The whole gallery, in the order the record stores it — ImageGallery
+    // renders the hero, arrows and thumbnails by itself once there is more than
+    // one.
+    images: resolveImages(imageIds(event.images), imageIndex("Events")),
     pills: [
       event.category,
       event.venue_name,
@@ -119,15 +111,13 @@ function eventView(event: EventRow): RecordView {
 // Rentals and services are the same row shape, so one builder serves both —
 // only the label differs, and it comes from item_type rather than the id.
 function itemView(item: ItemRow): RecordView {
-  const images = itemImageIndex();
-  const image = item.images ? images.get(item.images.toLowerCase()) : undefined;
   const location = item.location_coverage ?? "Not specified";
 
   return {
     kind: item.item_type === "service" ? "Service" : "Rental",
     title: item.title,
     description: item.description,
-    images: image ? [image] : [],
+    images: resolveImages(imageIds(item.images), itemImageIndex()),
     pills: [item.category, priceLabel(item.price, item.price_unit), location],
     details: [
       { label: "Category", value: item.category },
@@ -164,6 +154,13 @@ export default async function DetailsPage({
 
   const bookmarkIds = user ? getBookmarkIds(user.email) : null;
 
+  // Edit/Delete appear only for the account that posted the record, and the
+  // controls' `afterDelete` is that account's own profile — the page being
+  // viewed has nothing left to show once the record is gone. Whether the
+  // *render* offers them is cosmetic: lib/posts.ts re-checks the owner inside
+  // the UPDATE/DELETE itself.
+  const ownerEmail = event?.organizer_email ?? item?.provider_email ?? null;
+
   return (
     <>
       <Header user={user} />
@@ -174,6 +171,11 @@ export default async function DetailsPage({
           signedIn: user !== null,
           saved: bookmarkIds ? bookmarkIds.has(id) : false,
         }}
+        manage={
+          user && ownerEmail === user.email
+            ? { afterDelete: `/${user.username}` }
+            : undefined
+        }
       />
     </>
   );

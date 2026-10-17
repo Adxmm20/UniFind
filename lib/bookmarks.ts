@@ -1,5 +1,6 @@
 import { getDb, getWriteDb } from "./db";
 import type { EventRow, ItemRow } from "./queries";
+import { parseRecordId } from "./recordId";
 
 export type BookmarkedEvent = EventRow & {
   bookmarked_at: string;
@@ -14,17 +15,9 @@ export type ToggleResult =
   | { ok: true; bookmarked: boolean }
   | { ok: false; error: string };
 
-// Record ids are "<kind>-<n>" ("event-1", "item-4") everywhere in this app —
-// the same stem used for the picture filename.
-const RECORD_RE = /^(event|item)-(\d+)$/;
-
-export function parseRecordId(
-  recordId: string,
-): { kind: "event" | "item"; id: number } | null {
-  const match = RECORD_RE.exec(recordId);
-  if (!match) return null;
-  return { kind: match[1] as "event" | "item", id: Number(match[2]) };
-}
+// Record ids are "<kind>-<n>" ("event-1", "item-4") everywhere in this app — the
+// same stem used for the picture filename. The parser now lives in
+// lib/recordId.ts, which the edit/delete feature reads too.
 
 // Every record the user has saved, as a set of record ids. One query for the
 // whole page, which each page then folds into its CardData as a `bookmarked`
@@ -85,10 +78,10 @@ export function toggleBookmark(email: string, recordId: string): ToggleResult {
   const parsed = parseRecordId(recordId);
   if (!parsed) return { ok: false, error: "That record could not be found." };
 
-  // `PRAGMA foreign_keys = ON` lives in db/schema.sql and applies to the
-  // connection that ran it, so the write connection here does not enforce the
-  // bookmark's REFERENCES. Validate the target ourselves instead of trusting an
-  // id that arrived from the client.
+  // node:sqlite turns foreign keys on by default (and db/schema.sql re-asserts
+  // `PRAGMA foreign_keys = ON`), so the write connection does enforce the
+  // bookmark's REFERENCES — but a bad id would then arrive as a thrown
+  // constraint error. Validate the target ourselves so it is a plain message.
   if (!exists(parsed.kind, parsed.id)) {
     return { ok: false, error: "That record could not be found." };
   }

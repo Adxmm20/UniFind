@@ -8,7 +8,9 @@ import { Box, type SxProps, type Theme } from "@mui/material";
 // stepper, `accessibility` for the panel itself, `filter`/`sort`/`location` for
 // the home grid's pills — Material's `filter_alt` funnel, `swap_vert` arrows and
 // `location_on` pin. The arrows stand in for Material's own `sort` glyph, whose
-// three stacked bars could be read as a filter list next to the funnel).
+// three stacked bars could be read as a filter list next to the funnel, and
+// `visibility`/`visibilityOff` are Material's open and struck-through eyes, for
+// the auth form's reveal-password toggle).
 //
 // They are painted with `mask-image` rather than loaded through `<img>`. An
 // `<img>`-embedded SVG is its own document: its `fill` cannot see the page, so
@@ -39,7 +41,9 @@ export type IconName =
   | "accessibility"
   | "filter"
   | "sort"
-  | "location";
+  | "location"
+  | "visibility"
+  | "visibilityOff";
 
 export default function AppIcon({
   name,

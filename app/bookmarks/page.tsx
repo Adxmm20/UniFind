@@ -7,7 +7,8 @@ import BookmarksView, {
 import { getSessionUser } from "@/lib/auth";
 import { getBookmarkedEvents, getBookmarkedItems } from "@/lib/bookmarks";
 import { priceLabel } from "@/lib/format";
-import { imageIndex, itemImageIndex } from "@/lib/images";
+import { imageIds } from "@/lib/imageId";
+import { imageIndex, itemImageIndex, resolveImages } from "@/lib/images";
 
 export const metadata: Metadata = {
   title: "Bookmarks · UniFind",
@@ -36,9 +37,7 @@ export default async function BookmarksPage() {
     title: event.title,
     subtitle: event.category,
     meta: event.venue_name,
-    image: event.banner_image_url
-      ? eventImages.get(event.banner_image_url.toLowerCase())
-      : undefined,
+    image: resolveImages(imageIds(event.images), eventImages)[0],
     href: `/details/event-${event.event_id}`,
     bookmarkedAt: event.bookmarked_at,
     bookmarkId: event.bookmark_id,
@@ -53,7 +52,7 @@ export default async function BookmarksPage() {
     title: item.title,
     subtitle: item.category,
     meta: priceLabel(item.price, item.price_unit),
-    image: item.images ? itemImages.get(item.images.toLowerCase()) : undefined,
+    image: resolveImages(imageIds(item.images), itemImages)[0],
     href: `/details/item-${item.item_id}`,
     bookmarkedAt: item.bookmarked_at,
     bookmarkId: item.bookmark_id,

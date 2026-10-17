@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, IconButton } from "@mui/material";
+import { Box, IconButton, Typography } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -190,11 +190,41 @@ export default function Slideshow({ slides }: { slides: Slide[] }) {
       component="section"
       className="slideshow-glass"
       aria-roledescription="carousel"
-      aria-label="Featured records"
+      // The heading below names the carousel, so the section points at it
+      // rather than carrying a second, invisible label of its own.
+      aria-labelledby="featured-heading"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       sx={{ width: "100%", overflow: "hidden", py: { xs: 1.5, md: 2 } }}
     >
+      {/* Steam-style section head: the carousel's title sits in the content
+          column the rest of the page uses, while the stage below stays full
+          bleed. On the wallpaper, so it takes the scroll-tracking --on-bg ink
+          rather than a surface colour. */}
+      <Box
+        sx={{
+          width: "100%",
+          maxWidth: 1400,
+          mx: "auto",
+          px: { xs: 2, sm: 3, md: 4 },
+          pt: { xs: 0.5, md: 1 },
+          display: "flex",
+          alignItems: "baseline",
+        }}
+      >
+        <Typography
+          component="h2"
+          id="featured-heading"
+          sx={{
+            fontSize: { xs: "1.1rem", md: "1.35rem" },
+            fontWeight: 800,
+            letterSpacing: "0.02em",
+            color: "var(--on-bg)",
+          }}
+        >
+          Featured
+        </Typography>
+      </Box>
       {/* The stage is exactly one panel tall; the panels are centred in it, so
           its height is also what reserves room for the active frame's shadow. */}
       <Box

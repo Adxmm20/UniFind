@@ -5,11 +5,12 @@ import {
   Box,
   Button,
   Dialog,
+  IconButton,
+  InputAdornment,
   TextField,
   Typography,
 } from "@mui/material";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import {
   loginAction,
@@ -17,6 +18,7 @@ import {
   type AuthFormState,
 } from "@/app/actions/auth";
 import { fieldSx } from "../formStyles";
+import AppIcon from "../icons/AppIcon";
 import SocialIcons from "./SocialIcons";
 
 export type AuthTab = "login" | "signup";
@@ -107,6 +109,14 @@ const linkSx = {
   "&:hover": { backgroundColor: "transparent", textDecoration: "underline" },
 } as const;
 
+// The password field still wears fieldSx; this only strips the eye Edge paints
+// into a password box of its own (::-ms-reveal), so the reveal toggle above is
+// the only one in the field.
+const passwordSx = {
+  "& input::-ms-reveal": { display: "none" },
+  "& input::-ms-clear": { display: "none" },
+} as const;
+
 // A centred, desktop-style card split 35/65: theme-green sidebar with the
 // wordmark on the left, the auth form on the right. Still a modal window, never
 // a route — guests keep browsing the dimmed page behind it.
@@ -124,15 +134,18 @@ export default function LoginDialog({
   onTabChange: (tab: AuthTab) => void;
   onClose: () => void;
 }) {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  // One reveal state for the dialog: a password typed into either form is
+  // hidden again the moment the visitor switches form.
+  const [showPassword, setShowPassword] = useState(false);
 
   const isLogin = tab === "login";
   const fields = isLogin ? LOGIN_FIELDS : SIGNUP_FIELDS;
 
   function selectTab(next: AuthTab) {
     setError(null);
+    setShowPassword(false);
     onTabChange(next);
   }
 
@@ -145,10 +158,11 @@ export default function LoginDialog({
     try {
       const result = await action(formData);
       if (result.ok) {
-        // The cookie is already set server-side; refresh so the
-        // server-rendered Header picks up the new session.
-        router.refresh();
+        // The cookie is already set server-side. Close the dialog and reload
+        // the whole page so "logged in" visibly refreshes it — the
+        // server-rendered Header then carries the new session.
         onClose();
+        window.location.reload();
       } else {
         setError(result.error);
       }
@@ -234,21 +248,56 @@ export default function LoginDialog({
             onSubmit={(event) => submit(isLogin ? loginAction : signupAction, event)}
             sx={{ display: "flex", flexDirection: "column", gap: 3 }}
           >
-            {fields.map((field, index) => (
-              <TextField
-                key={field.name}
-                variant="standard"
-                fullWidth
-                name={field.name}
-                label={field.label}
-                type={field.type}
-                autoComplete={field.autoComplete}
-                required={field.required}
-                helperText={field.helperText}
-                autoFocus={index === 0}
-                sx={fieldSx}
-              />
-            ))}
+            {fields.map((field, index) => {
+              const isPassword = field.type === "password";
+              return (
+                <TextField
+                  key={field.name}
+                  variant="standard"
+                  fullWidth
+                  name={field.name}
+                  label={field.label}
+                  type={isPassword && showPassword ? "text" : field.type}
+                  autoComplete={field.autoComplete}
+                  required={field.required}
+                  helperText={field.helperText}
+                  autoFocus={index === 0}
+                  sx={isPassword ? [fieldSx, passwordSx] : fieldSx}
+                  // The eye is the one adornment a password box needs; a
+                  // plain password keeps MUI's own endAdornment slot free.
+                  slotProps={
+                    isPassword
+                      ? {
+                          input: {
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton
+                                  type="button"
+                                  size="small"
+                                  onClick={() => setShowPassword((shown) => !shown)}
+                                  aria-label={
+                                    showPassword ? "Hide password" : "Show password"
+                                  }
+                                  aria-pressed={showPassword}
+                                  sx={{
+                                    color: "var(--ink-muted)",
+                                    "&:hover": { color: "var(--accent)" },
+                                  }}
+                                >
+                                  <AppIcon
+                                    name={showPassword ? "visibilityOff" : "visibility"}
+                                    size={20}
+                                  />
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          },
+                        }
+                      : undefined
+                  }
+                />
+              );
+            })}
 
             <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 0.5 }}>
               <Button type="submit" disabled={pending} sx={actionSx}>

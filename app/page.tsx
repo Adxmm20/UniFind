@@ -8,15 +8,35 @@ import Slideshow, { type Slide } from "./components/Slideshow";
 import { getSessionUser } from "@/lib/auth";
 import { getBookmarkIds } from "@/lib/bookmarks";
 import { IMAGE_RE, imageIndex, itemImageIndex, listImages } from "@/lib/images";
-import { getEvents, getRentals, getServices } from "@/lib/queries";
+import {
+  getEventById,
+  getEvents,
+  getItemById,
+  getRentals,
+  getServices,
+} from "@/lib/queries";
+import { parseRecordId } from "@/lib/recordId";
 
 // Slides come from public/img/trending/, whose base names are record ids, so
 // each slide can link straight to its details page.
+//
+// A slide is also dropped when its record is gone: records can be deleted from
+// their details page now, and a trending picture is a copy that the delete
+// deliberately leaves on disk (nothing removes files). Without this check the
+// slideshow would keep offering a link that 404s.
 function getSlides(): Slide[] {
-  return listImages("trending").map((file) => {
-    const id = file.replace(IMAGE_RE, "");
-    return { id, href: `/details/${id}`, src: `/img/trending/${file}` };
-  });
+  return listImages("trending")
+    .map((file) => ({ id: file.replace(IMAGE_RE, ""), file }))
+    .filter(({ id }) => {
+      const parsed = parseRecordId(id);
+      if (!parsed) return false;
+      return parsed.kind === "event"
+        ? getEventById(parsed.id) !== undefined
+        : getItemById(parsed.id) !== undefined;
+    })
+    .map(({ id, file }) => {
+      return { id, href: `/details/${id}`, src: `/img/trending/${file}` };
+    });
 }
 
 export default async function Home() {

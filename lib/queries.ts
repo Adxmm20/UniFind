@@ -1,9 +1,14 @@
 import { getDb } from "./db";
 
 export type UserRow = {
+  user_id: number;
   email: string;
   password_hash: string;
   phone_number: string | null;
+  /** Picture id ("P101") or null; resolved to a URL by lib/images.ts. */
+  profile_image: string | null;
+  /** The high-water mark picture ids are allocated from. Never reused. */
+  profile_image_seq: number;
   created_at: string;
 };
 
@@ -17,7 +22,10 @@ export type EventRow = {
   start_time: string;
   end_time: string;
   star_points_eligible: number;
-  banner_image_url: string | null;
+  /** JSON array of picture ids ("E101", "E102", …). See lib/imageId.ts. */
+  images: string | null;
+  /** The high-water mark picture ids are allocated from. Never reused. */
+  image_seq: number;
   created_at: string;
 };
 
@@ -31,7 +39,10 @@ export type ItemRow = {
   price: number;
   price_unit: string | null;
   location_coverage: string | null;
+  /** JSON array of picture ids ("R401" rental / "S1001" service). */
   images: string | null;
+  /** The high-water mark picture ids are allocated from. Never reused. */
+  image_seq: number;
   is_available: number;
   created_at: string;
 };

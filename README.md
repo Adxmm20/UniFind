@@ -17,8 +17,8 @@ with Material UI v9 + Emotion, backed by SQLite through Node's built-in
 - **Search** — ranked, typo-tolerant search over titles, descriptions, categories,
   venues and poster handles (`/search?q=…`), plus as-you-type suggestions through
   `GET /api/suggest`.
-- **Details pages** — image gallery, description, facts and organiser/provider
-  info for every record (`/details/[id]`).
+- **Details pages** — a store-style image gallery, description, facts and
+  organiser/provider info for every record (`/details/[id]`).
 - **Profiles** — every poster gets a page listing their events, listings and
   reviews (`/[username]`), reachable by handle or email local-part.
 - **Accounts & auth** — email/password sign-up and sign-in with scrypt hashing
@@ -26,6 +26,10 @@ with Material UI v9 + Emotion, backed by SQLite through Node's built-in
 - **Bookmarks** — save any record, with a grid/list view and filtering/sorting.
 - **Posting** — publish a new event, rental or service, including a picture
   upload, with server-side validation.
+- **Editing & deleting** — the account that posted a record can change it at
+  `/details/[id]/edit` or remove it after a confirmation, from the details page
+  or from its own cards. Ownership is enforced in the SQL, and deleting removes
+  the row (and its bookmarks/RSVPs/reviews) but never the picture files.
 - **AI assistant** — a floating assistant on every details page that can
   summarise a listing, list key points or draft an outreach message (Gemini).
 - **Accessibility tools** — a full panel of preferences: light/dark/system theme,
@@ -113,6 +117,12 @@ Other useful handles: `iheal_organizer`, `car_rentals`, `photo_studio`,
 | `npm run db:seed` | Creates `data/unifind.db` from `db/schema.sql` + `db/seed.sql`. **Non-destructive** — an existing DB is left alone. |
 | `npm run db:reset`| Drops and recreates every table (`db:seed --force`). Use after editing the schema or seed. |
 
+One more script is a one-off rather than an npm script:
+`node scripts/migrate-image-ids.mjs` renames the pictures under `public/img/` and
+rewrites `data/unifind.db` **in place** to the picture-id rule (see *Data and
+images*). It is idempotent and prints what it did — it is how this database moved
+to that rule without a `db:reset`, so runtime accounts survived.
+
 Because seeding is non-destructive, accounts created at runtime survive
 restarts. It also means a stale database is **not** repaired automatically —
 run `npm run db:reset` after changing `db/schema.sql` or `db/seed.sql`.
@@ -124,6 +134,7 @@ run `npm run db:reset` after changing `db/schema.sql` or `db/seed.sql`.
 | `/`              | Home — hero slideshow and the Events/Rentals/Services catalogue.   |
 | `/search`        | Search results (`?q=…`), grouped by record kind, with people chips.|
 | `/details/[id]`  | Record details, e.g. `/details/event-1` or `/details/item-10`.     |
+| `/details/[id]/edit` | Edit an existing record (its owner only; anyone else gets a 404). |
 | `/[username]`    | Profile page, e.g. `/josa_organizer`.                              |
 | `/bookmarks`     | Saved records (signed-in only).                                    |
 | `/post`          | Create a new event/rental/service (signed-in only).                |
@@ -146,12 +157,14 @@ app/
   post/                    Posting page
   search/                  Search results
   details/[id]/            Record details route
+  details/[id]/edit/       Edit an existing record (owner only)
   api/suggest/             The one route handler
   actions/                 Server actions (auth, bookmarks, posts, ai)
   components/              All UI (cards, header, details, post, profile, a11y, icons)
 lib/                       Server/domain logic (db, auth, queries, search, format, …)
 db/                        schema.sql, seed.sql, dump
 scripts/seed-db.mjs        Database seeder (node:sqlite)
+scripts/migrate-image-ids.mjs  One-off picture-id migration (files + database)
 public/img/                Events, Rental, Services, trending, pfp, icon
 data/unifind.db            Generated SQLite database (gitignored)
 ```
@@ -160,13 +173,31 @@ data/unifind.db            Generated SQLite database (gitignored)
 
 - Tables: `users`, `events`, `items` (rentals **and** services), `event_rsvps`,
   `bookmarks`, `reviews`.
-- Every record has a canonical id (`event-1`, `item-4`) and its picture is named
-  after that stem: `public/img/Events/event-1.jpg`. Rentals live in
-  `public/img/Rental/`, services in `public/img/Services/` (a service's stem is
-  `service-<n>`), and pages resolve pictures by name through an image index — so
-  reordering rows never shifts which picture a card gets.
-- Reading uses a read-only connection (`getDb()`); only signup, bookmark toggles
-  and posting write, through `getWriteDb()`.
+- Every record has a canonical id (`event-1`, `item-4`), and each of its
+  pictures has a picture id built from it: prefix letter, record number, then
+  the picture's sequence number zero-padded to two digits — `E101` is event 1's
+  picture 1, `R401` rental item 4's, `S1001` service item 10's, `P101` user 1's
+  profile picture. The id is the file's stem (`public/img/Events/E101.jpg`), and
+  `events.images` / `items.images` hold a JSON array of ids (a card shows the
+  first, the details page the whole gallery). Pages resolve pictures by name
+  through an image index, so reordering rows never shifts which picture a card
+  gets.
+- **A picture id is never reused.** Each record carries a high-water mark
+  (`events.image_seq`, `items.image_seq`, `users.profile_image_seq`) that only
+  ever grows, so adding a picture after removing one takes the *next* number
+  rather than the removed one. A picture removed during an edit is moved to a
+  `retired/` subfolder rather than deleted, and deleting a record leaves its
+  files where they are — so a URL that has been shown never resolves to a
+  different picture.
+- Rentals live in `public/img/Rental/` (R…), services in `public/img/Services/`
+  (S…); a profile picture is `public/img/pfp/P101.jpeg` for user 1. Because a
+  profile id carries the account's `user_id`, `db/seed.sql` writes that id out
+  explicitly (in `created_at` order, the order the live database already has),
+  and the first eighteen seeded accounts ship with the demo avatar their file
+  holds; the rest fall back to the initial letter.
+- Reading uses a read-only connection (`getDb()`); only signup, bookmark toggles,
+  posting, editing/deleting a record and the profile picture write, through
+  `getWriteDb()`.
 - Seed data comes from a phpMyAdmin dump merged into the live database; all
   timestamps are stored and rendered as UTC.
 

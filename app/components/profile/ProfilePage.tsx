@@ -10,11 +10,13 @@ export default function ProfilePage({
   events,
   listings,
   reviews,
+  isOwnProfile,
 }: {
   user: ProfileUser;
   events: CardData[];
   listings: CardData[];
   reviews: CardData[];
+  isOwnProfile: boolean;
 }) {
   return (
     <Box
@@ -40,6 +42,7 @@ export default function ProfilePage({
           listings: listings.length,
           reviews: reviews.length,
         }}
+        isOwnProfile={isOwnProfile}
       />
       <ProfileTabs events={events} listings={listings} reviews={reviews} />
     </Box>

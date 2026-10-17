@@ -8,7 +8,7 @@ import {
   type AiRecordContext,
   type ChatMessage,
 } from "@/lib/aiPrompt";
-import { parseRecordId } from "@/lib/bookmarks";
+import { parseRecordId } from "@/lib/recordId";
 import {
   formatDateTime,
   formatEventRange,

@@ -11,6 +11,7 @@ import {
 } from "node:crypto";
 import { cookies } from "next/headers";
 import { getWriteDb } from "./db";
+import { profileImageIndex } from "./images";
 import { getUserByEmail, getUserByUsername } from "./queries";
 
 export const SESSION_COOKIE = "unifind_session";
@@ -20,6 +21,9 @@ export type SessionUser = {
   email: string;
   username: string;
   phone: string | null;
+  /** The profile picture's public URL, or null when the account has none (the
+   *  avatar then shows the initial letter). */
+  avatar: string | null;
 };
 
 export type AuthResult =
@@ -128,8 +132,19 @@ export function usernameFromEmail(email: string): string {
   return at > 0 ? email.slice(0, at) : email;
 }
 
-function toSessionUser(email: string, phone: string | null): SessionUser {
-  return { email, username: usernameFromEmail(email), phone };
+function toSessionUser(
+  email: string,
+  phone: string | null,
+  profileImage: string | null,
+): SessionUser {
+  return {
+    email,
+    username: usernameFromEmail(email),
+    phone,
+    avatar: profileImage
+      ? (profileImageIndex().get(profileImage.toLowerCase()) ?? null)
+      : null,
+  };
 }
 
 // Reads the session cookie and resolves it against the database. Reading
@@ -145,7 +160,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   const user = getUserByEmail(email);
   if (!user) return null;
 
-  return toSessionUser(user.email, user.phone_number);
+  return toSessionUser(user.email, user.phone_number, user.profile_image);
 }
 
 export async function createSession(email: string): Promise<void> {
@@ -196,7 +211,7 @@ export function authenticate(identifier: string, password: string): AuthResult {
     return { ok: false, error: "That username and password combination is not right." };
   }
 
-  return { ok: true, user: toSessionUser(user.email, user.phone_number) };
+  return { ok: true, user: toSessionUser(user.email, user.phone_number, user.profile_image) };
 }
 
 export function register(email: string, password: string, phone: string): AuthResult {
@@ -229,5 +244,5 @@ export function register(email: string, password: string, phone: string): AuthRe
     )
     .run(address, hashPassword(password), phoneNumber);
 
-  return { ok: true, user: toSessionUser(address, phoneNumber) };
+  return { ok: true, user: toSessionUser(address, phoneNumber, null) };
 }

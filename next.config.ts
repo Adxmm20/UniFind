@@ -9,11 +9,12 @@ const nextConfig: NextConfig = {
   /* config options here */
   experimental: {
     agentFeedback: true,
-    // Posting attaches a picture, and the default 1 MB server-action body limit
-    // would reject anything but a thumbnail before app/actions/posts.ts runs.
-    // The limit counts multipart overhead too (10-20 KB for a file this size),
-    // so 6 MB leaves room over the 5 MB cap lib/posts.ts enforces in code.
-    serverActions: { bodySizeLimit: "6mb" },
+    // Posting attaches up to MAX_PICTURES pictures (6, see lib/upload.ts), each
+    // capped at 5 MB by the same module, and the default 1 MB limit would reject
+    // even a thumbnail before app/actions/posts.ts runs. The limit counts
+    // multipart overhead too (10-20 KB per file), so 32 MB leaves room over the
+    // 30 MB of pictures the form can carry.
+    serverActions: { bodySizeLimit: "32mb" },
     // This app blocks on purpose: every page reads the session cookie so the
     // first paint knows guest vs signed-in (see `instant = false` in
     // app/layout.tsx), which means no route here can be instant-navigable. The

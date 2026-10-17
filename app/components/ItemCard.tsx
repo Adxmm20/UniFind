@@ -4,6 +4,7 @@ import { Box, Card, CardContent, Typography } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
 import BookmarkButton from "./bookmarks/BookmarkButton";
+import RecordActions from "./RecordActions";
 
 export type CardData = {
   id: string;
@@ -50,6 +51,14 @@ export type CardData = {
   campus?: string;
   /** Events only: whether the event counts for STAR points (see /post). */
   starPoints?: boolean;
+  /**
+   * Set by the *owner's* own profile page only: it puts Edit/Delete on the card
+   * (the overlay control in the top-left corner, beside the bookmark control in
+   * the top-right). Viewer-dependent like `bookmark` is — a record still reads
+   * the same wherever it is found, because who may manage it is not a fact
+   * about the record.
+   */
+  manage?: boolean;
 };
 
 export default function ItemCard({
@@ -61,6 +70,7 @@ export default function ItemCard({
   href,
   note,
   bookmark,
+  manage,
   sizes = "(max-width: 600px) 100vw, (max-width: 900px) 50vw, 33vw",
 }: CardData & { sizes?: string }) {
   return (
@@ -132,6 +142,8 @@ export default function ItemCard({
           </Typography>
         ) : null}
       </CardContent>
+
+      {manage ? <RecordActions recordId={id} /> : null}
 
       {bookmark ? (
         <BookmarkButton

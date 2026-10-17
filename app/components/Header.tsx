@@ -63,7 +63,9 @@ export default function Header({ user }: { user: SessionUser | null }) {
   function handleLogout() {
     startLogout(async () => {
       await logoutAction();
-      router.refresh();
+      // A hard reload, not router.refresh(): "logged out" should visibly
+      // refresh the page, not just swap the header in place.
+      window.location.reload();
     });
   }
 

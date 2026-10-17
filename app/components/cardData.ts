@@ -1,6 +1,8 @@
 import type { CardData } from "./ItemCard";
 import type { SessionUser } from "@/lib/auth";
 import { priceLabel } from "@/lib/format";
+import { imageIds } from "@/lib/imageId";
+import { resolveImages } from "@/lib/images";
 import type { EventRow, ItemRow } from "@/lib/queries";
 
 // Server-only: `images` comes from lib/images.ts, which reads the filesystem.
@@ -90,9 +92,9 @@ export function eventCards(
       // Truthy rather than `=== 1`, the same test the details page makes: the
       // column is a 0/1 int today but nothing in the type says it must be.
       starPoints: Boolean(event.star_points_eligible),
-      image: event.banner_image_url
-        ? images.get(event.banner_image_url.toLowerCase())
-        : undefined,
+      // A card shows the record's first picture; the rest of its gallery
+      // belongs to the details page.
+      image: resolveImages(imageIds(event.images), images)[0],
       href: `/details/${id}`,
       bookmark: bookmark(id),
     };
@@ -122,7 +124,7 @@ export function itemCards(
       category: categoryOf(item.category),
       price: item.price,
       campus: campusOf(item.location_coverage),
-      image: item.images ? images.get(item.images.toLowerCase()) : undefined,
+      image: resolveImages(imageIds(item.images), images)[0],
       href: `/details/${id}`,
       bookmark: bookmark(id),
     };

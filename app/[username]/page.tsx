@@ -7,7 +7,7 @@ import ProfilePage from "@/app/components/profile/ProfilePage";
 import { getSessionUser } from "@/lib/auth";
 import { getBookmarkIds } from "@/lib/bookmarks";
 import { formatDate } from "@/lib/format";
-import { imageIndex, itemImageIndex } from "@/lib/images";
+import { imageIndex, itemImageIndex, profileImageIndex } from "@/lib/images";
 import {
   getAllUsernames,
   getEventsByOrganizer,
@@ -47,7 +47,8 @@ export default async function UserProfilePage({
   if (!user) notFound();
 
   const local = user.email.slice(0, user.email.indexOf("@"));
-
+  const isOwnProfile = sessionUser?.email === user.email;
+  const pfps = profileImageIndex();
   // Rows become cards through the one mapping (app/components/cardData.ts), so a
   // profile card carries the record's picture exactly like a home or search card
   // — building the CardData by hand here is what left the events imageless.
@@ -72,6 +73,14 @@ export default async function UserProfilePage({
     bookmark,
   );
 
+  // On your own page every card is yours, so each gets the manage control
+  // (Edit/Delete). It is a per-viewer flag like `bookmark`, not a fact about the
+  // record, which is why it is added here rather than in cardData.ts — a
+  // record still looks the same wherever it is found. Reviews are not records
+  // anyone can edit, so they never get it.
+  const asOwner = (cards: CardData[]) =>
+    isOwnProfile ? cards.map((card) => ({ ...card, manage: true })) : cards;
+
   const reviews: CardData[] = getReviewsForProvider(user.email).map((review) => ({
     id: `review-${review.review_id}`,
     title: review.item_title,
@@ -88,10 +97,18 @@ export default async function UserProfilePage({
           email: user.email,
           phone: user.phone_number,
           joined: formatDate(user.created_at),
+          // The owner gets the uploader on their own page (the pencil over the
+          // picture); everyone else just sees whatever picture is set.
+          avatar: user.profile_image
+            ? (pfps.get(user.profile_image.toLowerCase()) ?? null)
+            : null,
         }}
-        events={events}
-        listings={listings}
+        events={asOwner(events)}
+        listings={asOwner(listings)}
         reviews={reviews}
+        // A viewer's own page has nobody to message, so the sidebar hides the
+        // button there; a guest (no session) still gets it.
+        isOwnProfile={isOwnProfile}
       />
     </>
   );

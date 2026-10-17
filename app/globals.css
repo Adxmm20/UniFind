@@ -48,6 +48,21 @@
   --btn-ink: light-dark(#ffffff, #081c15);
   --btn-bg-hover: light-dark(#1b4332, #b7e4c7);
 
+  /* The one destructive control there is — deleting a record. Its own pair
+     rather than a palette colour so the theme switch carries it like everything
+     else, and so high contrast can keep it readable. */
+  --danger: light-dark(#b3261e, #f2b8b5);
+  --danger-ink: light-dark(#ffffff, #2b0b09);
+  --danger-hover: light-dark(#8f1d17, #f7cdca);
+
+  /* The full-size picture viewer (the gallery's lightbox). A photo is judged
+     against a neutral dark backdrop whichever theme is on, so both sides of
+     this pair stay dark and it is the ink on it that stays light. */
+  --viewer-bg: light-dark(rgba(6, 16, 12, 0.94), rgba(2, 7, 5, 0.96));
+  --viewer-ink: #eaf7ec;
+  --viewer-ink-muted: rgba(234, 247, 236, 0.7);
+  --viewer-line: rgba(234, 247, 236, 0.22);
+
   /* Controls that float over a picture — the carousel arrows and the gallery's
      lightbox buttons — so they need their own translucent set. */
   --overlay-bg: light-dark(rgba(255, 255, 255, 0.85), rgba(10, 23, 18, 0.72));

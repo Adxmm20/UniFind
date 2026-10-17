@@ -61,3 +61,23 @@ export function formatEventRange(start: string, end: string): string {
 
   return `${formatDate(start)}, ${from.toLocaleTimeString("en-GB", TIME_OPTIONS)} – ${to.toLocaleTimeString("en-GB", TIME_OPTIONS)}`;
 }
+
+/**
+ * A WhatsApp chat link for a stored phone number, aimed at the phone number
+ * itself (wa.me takes digits, no "+") with an optional prefilled message. The
+ * numbers in the catalogue are stored internationally ("+60123456789"); a local
+ * form ("012-345 6789") is resolved against the Malaysian country code these
+ * campuses use, and anything already international is left alone. Returns null
+ * when the value carries no digits at all, so a caller never links to a chat
+ * with nobody in it.
+ */
+export function whatsappHref(phone: string, message?: string): string | null {
+  const digits = phone.replace(/\D/g, "");
+  if (!digits) return null;
+
+  const international = digits.startsWith("0")
+    ? `60${digits.replace(/^0+/, "")}`
+    : digits;
+  const query = message ? `?text=${encodeURIComponent(message)}` : "";
+  return `https://wa.me/${international}${query}`;
+}

@@ -19,6 +19,7 @@ export default function MiniProfile({ user }: { user: SessionUser }) {
         >
           <Avatar
             alt={user.username}
+            src={user.avatar ?? undefined}
             sx={{ width: 48, height: 48, fontWeight: 600, backgroundColor: "var(--btn-bg)" }}
           >
             {initial}
